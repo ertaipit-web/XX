@@ -1,0 +1,192 @@
+{
+  "run": {
+    "run_id": "6c91c820",
+    "started_at": "2026-10-13T12:44:33.041449",
+    "finished_at": "2026-10-13T12:44:33.041525",
+    "profile": null,
+    "vacancies_found": 1,
+    "vacancies_checked": 1,
+    "vacancies_unique": 1,
+    "vacancies_suitable": 0,
+    "vacancies_needs_clarification": 1,
+    "errors": [],
+    "agent_results": [],
+    "metadata": {}
+  },
+  "vacancies": [
+    {
+      "id": "demo",
+      "title": "Go-разработчик",
+      "employer": "DemoCo",
+      "source_url": "https://example.com/demo",
+      "alternate_urls": [],
+      "source_name": "unknown",
+      "published_at": null,
+      "checked_at": "2026-10-13T12:44:33.041486",
+      "location": null,
+      "work_format": "remote",
+      "salary": {
+        "from_amount": 140000,
+        "to_amount": null,
+        "currency": "unknown",
+        "tax_type": "unknown",
+        "period": "month",
+        "raw_text": null,
+        "evidence": []
+      },
+      "benefits": {
+        "dms_status": "not_mentioned",
+        "dms_notes": null,
+        "other_benefits": [],
+        "evidence": []
+      },
+      "technology_stack": [],
+      "description": null,
+      "requirements": null,
+      "responsibilities": null,
+      "confirmed_facts": [
+        "Есть ссылка на первоисточник"
+      ],
+      "evidence": [],
+      "technical_analysis": {
+        "technologies": [
+          "Go"
+        ],
+        "go_relevance_score": 0,
+        "task_interest_score": 60,
+        "concurrency_signals": [],
+        "backend_signals": [],
+        "concerns": [],
+        "positives": [],
+        "has_confirmed_tech": true
+      },
+      "career_fit": {
+        "fit_score": 70,
+        "career_growth_score": 0,
+        "motivation_score": 0,
+        "strong_points": [
+          "Соответствует базовым критериям"
+        ],
+        "risks": [],
+        "questions_for_interview": [
+          "Есть ли подтверждение ДМС?",
+          "Удалёнка/гибрид подтверждены ли?"
+        ],
+        "recommendation": null
+      },
+      "score": {
+        "salary_fit": 0,
+        "format_fit": 0,
+        "dms_fit": 0,
+        "technical_interest": 0,
+        "career_potential": 0,
+        "total": 0,
+        "weights": {
+          "salary_fit": 0.25,
+          "format_fit": 0.25,
+          "dms_fit": 0.15,
+          "technical_interest": 0.25,
+          "career_potential": 0.1
+        },
+        "explanation": []
+      },
+      "status": "needs_clarification",
+      "non_compliance_reasons": [],
+      "data_completeness": 2
+    }
+  ],
+  "best_vacancies": [],
+  "needs_clarification": [
+    {
+      "id": "demo",
+      "title": "Go-разработчик",
+      "employer": "DemoCo",
+      "source_url": "https://example.com/demo",
+      "alternate_urls": [],
+      "source_name": "unknown",
+      "published_at": null,
+      "checked_at": "2026-10-13T12:44:33.041486",
+      "location": null,
+      "work_format": "remote",
+      "salary": {
+        "from_amount": 140000,
+        "to_amount": null,
+        "currency": "unknown",
+        "tax_type": "unknown",
+        "period": "month",
+        "raw_text": null,
+        "evidence": []
+      },
+      "benefits": {
+        "dms_status": "not_mentioned",
+        "dms_notes": null,
+        "other_benefits": [],
+        "evidence": []
+      },
+      "technology_stack": [],
+      "description": null,
+      "requirements": null,
+      "responsibilities": null,
+      "confirmed_facts": [
+        "Есть ссылка на первоисточник"
+      ],
+      "evidence": [],
+      "technical_analysis": {
+        "technologies": [
+          "Go"
+        ],
+        "go_relevance_score": 0,
+        "task_interest_score": 60,
+        "concurrency_signals": [],
+        "backend_signals": [],
+        "concerns": [],
+        "positives": [],
+        "has_confirmed_tech": true
+      },
+      "career_fit": {
+        "fit_score": 70,
+        "career_growth_score": 0,
+        "motivation_score": 0,
+        "strong_points": [
+          "Соответствует базовым критериям"
+        ],
+        "risks": [],
+        "questions_for_interview": [
+          "Есть ли подтверждение ДМС?",
+          "Удалёнка/гибрид подтверждены ли?"
+        ],
+        "recommendation": null
+      },
+      "score": {
+        "salary_fit": 0,
+        "format_fit": 0,
+        "dms_fit": 0,
+        "technical_interest": 0,
+        "career_potential": 0,
+        "total": 0,
+        "weights": {
+          "salary_fit": 0.25,
+          "format_fit": 0.25,
+          "dms_fit": 0.15,
+          "technical_interest": 0.25,
+          "career_potential": 0.1
+        },
+        "explanation": []
+      },
+      "status": "needs_clarification",
+      "non_compliance_reasons": [],
+      "data_completeness": 2
+    }
+  ],
+  "not_suitable": [],
+  "recommendations": [],
+  "next_steps": [],
+  "candidate_improvements": [],
+  "to_recheck": [],
+  "summary": {
+    "run_id": "6c91c820",
+    "vacancies": 1,
+    "suitable": 0,
+    "needs_clarification": 1
+  }
+}
