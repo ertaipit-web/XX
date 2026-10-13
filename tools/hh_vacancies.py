@@ -275,7 +275,10 @@ def main() -> int:
 
         loader = ConfigLoader()
         llm = None
-        if not args.no_llm:
+        if args.no_llm:
+            # Disable LLM in the config loader (also stops orchestrator auto-build).
+            os.environ["VACANCIES_DISABLE_LLM"] = "1"
+        else:
             llm_config = loader.load_llm_config()
             if args.llm_model:
                 llm_config.model = args.llm_model
@@ -285,7 +288,11 @@ def main() -> int:
                 llm = build_llm_client(llm_config)
                 print(f"LLM: {llm_config.provider} / {llm_config.model} @ {llm_config.base_url}")
 
-        orch = VacancyResearchOrchestrator(limits=OrchestratorLimits(), llm=llm)
+        limits = OrchestratorLimits()
+        if args.no_llm:
+            orch = VacancyResearchOrchestrator(limits=limits, disable_llm=True)
+        else:
+            orch = VacancyResearchOrchestrator(limits=limits, llm=llm)
         report = orch.run(
             raw_query=raw_query,
             source=args.report_source,

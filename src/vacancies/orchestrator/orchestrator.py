@@ -60,13 +60,16 @@ class VacancyResearchOrchestrator:
         limits: OrchestratorLimits | None = None,
         config_loader: ConfigLoader | None = None,
         llm: BaseLLMClient | None = None,
+        disable_llm: bool = False,
     ) -> None:
         self.limits = limits or OrchestratorLimits()
         self.config = config_loader or ConfigLoader()
 
-        # Build the LLM client from config unless one was injected.
-        if llm is not None:
-            self.llm: BaseLLMClient | None = llm
+        # Build the LLM client from config unless one was injected or disabled.
+        if disable_llm:
+            self.llm: BaseLLMClient | None = None
+        elif llm is not None:
+            self.llm = llm
         else:
             llm_config = self.config.load_llm_config()
             self.llm = build_llm_client(llm_config) if llm_config.enabled else None

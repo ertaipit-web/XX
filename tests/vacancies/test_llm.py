@@ -60,6 +60,27 @@ class TestClientFactory:
             build_llm_client(LLMConfig(provider="does-not-exist"))
 
 
+class TestOrchestratorDisableLLM:
+    def test_disable_llm_flag_leaves_client_none(self):
+        from src.vacancies.orchestrator.orchestrator import VacancyResearchOrchestrator
+        orch = VacancyResearchOrchestrator(disable_llm=True)
+        assert orch.llm is None
+        assert orch.intake.llm is None
+        assert orch.tech.llm is None
+        assert orch.fit.llm is None
+        assert orch.report_writer.llm is None
+
+    def test_disable_llm_skips_report_enrichment(self):
+        from src.vacancies.core.enums import WorkFormat
+        from src.vacancies.orchestrator.orchestrator import VacancyResearchOrchestrator
+        orch = VacancyResearchOrchestrator(disable_llm=True)
+        v = _vacancy()
+        report = orch.run(fixtures=[v], write_reports=False)
+        assert report.best_vacancies  # pipeline still works
+        assert all(x.llm_summary is None for x in report.vacancies)
+        assert "report_llm_enriched" not in report.run.metadata
+
+
 class TestJsonExtraction:
     def test_plain_json(self):
         client = MockLLMClient(default_response='{"a": 1}')
