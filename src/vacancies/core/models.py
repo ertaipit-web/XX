@@ -136,3 +136,7 @@ class Vacancy:
     status: VacancyStatus = VacancyStatus.NEEDS_CLARIFICATION
     non_compliance_reasons: List[str] = field(default_factory=list)
     data_completeness: DataCompleteness = DataCompleteness.UNKNOWN
+    llm_summary: Optional[str] = None
+    llm_why_fits: Optional[str] = None
+    llm_unknowns: List[str] = field(default_factory=list)
+    llm_what_to_ask: List[str] = field(default_factory=list)

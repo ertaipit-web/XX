@@ -1,19 +1,24 @@
 ﻿from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from ..core.enums import WorkFormat
+from ..core.enums import Currency, WorkFormat
 from ..core.models import CandidateProfile, SearchQuery, Vacancy
+from ..llm.client import BaseLLMClient
+from ..llm.prompts import INTAKE_SYSTEM, build_intake_prompt
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
 class AgentBase:
     name: str
 
-    def run(self, **kwargs: Any) -> Any:
+    def run(self, *args: Any, **kwargs: Any) -> Any:
         raise NotImplementedError
 
 
@@ -21,11 +26,12 @@ class AgentBase:
 class CareerIntakeAgent(AgentBase):
     """Parses a raw text query and extracts candidate profile criteria.
 
-    Extracts: profession, location hints, salary expectations, work format preferences.
-    Returns validated profile with any contradictions or missing data flagged.
+    Uses an optional LLM client for free-text parsing; falls back to
+    deterministic heuristics when the LLM is unavailable or returns garbage.
     """
 
     name: str = "Career Intake Agent"
+    llm: Optional[BaseLLMClient] = None
 
     def run(self, raw_query: str | None = None, profile: CandidateProfile | None = None) -> Dict[str, Any]:
         """Parse raw query string and merge with existing profile.
@@ -50,6 +56,84 @@ class CareerIntakeAgent(AgentBase):
                 "missing_data": missing_data,
             }
 
+        # --- LLM path -------------------------------------------------
+        if self.llm is not None:
+            parsed = self._parse_with_llm(raw_query)
+            if parsed:
+                self._apply_llm_result(profile, parsed, messages, contradictions, missing_data)
+                return {
+                    "profile": profile,
+                    "messages": messages,
+                    "contradictions": contradictions,
+                    "missing_data": missing_data,
+                }
+            messages.append("LLM parsing unavailable, using heuristic fallback")
+
+        # --- Heuristic fallback ---------------------------------------
+        return self._parse_with_heuristics(raw_query, profile, messages, contradictions, missing_data)
+
+    def _parse_with_llm(self, raw_query: str) -> Optional[Dict[str, Any]]:
+        client = self.llm
+        if client is None:
+            return None
+        try:
+            return client.generate_json(
+                build_intake_prompt(raw_query), system=INTAKE_SYSTEM
+            )
+        except Exception as e:  # noqa: BLE001
+            logger.warning("LLM intake failed: %s", e)
+            return None
+
+    def _apply_llm_result(
+        self,
+        profile: CandidateProfile,
+        parsed: Dict[str, Any],
+        messages: List[str],
+        contradictions: List[str],
+        missing_data: List[str],
+    ) -> None:
+        if parsed.get("profession"):
+            profile.profession = str(parsed["profession"])
+        if isinstance(parsed.get("locations"), list) and parsed["locations"]:
+            profile.locations = [str(x) for x in parsed["locations"]]
+        if isinstance(parsed.get("work_formats"), list) and parsed["work_formats"]:
+            fmts = []
+            for f in parsed["work_formats"]:
+                s = str(f).lower()
+                if s in ("remote", "удалённо", "удаленно"):
+                    fmts.append(WorkFormat.REMOTE)
+                elif s in ("hybrid", "гибрид"):
+                    fmts.append(WorkFormat.HYBRID)
+                elif s in ("office", "офис"):
+                    fmts.append(WorkFormat.OFFICE)
+            if fmts:
+                profile.work_formats = fmts
+        if parsed.get("min_salary_rub_month") is not None:
+            try:
+                profile.min_salary_rub_month = float(parsed["min_salary_rub_month"])
+            except (TypeError, ValueError):
+                pass
+        if parsed.get("require_dms") is not None:
+            profile.require_dms = bool(parsed["require_dms"])
+        if isinstance(parsed.get("contradictions"), list):
+            contradictions.extend(str(x) for x in parsed["contradictions"])
+        if isinstance(parsed.get("missing_data"), list):
+            missing_data.extend(str(x) for x in parsed["missing_data"])
+
+        profile.contradictions = contradictions
+        profile.missing_data = missing_data
+        messages.append(
+            f"Профиль разобран LLM: {profile.profession}, {', '.join(profile.locations)}"
+        )
+
+    def _parse_with_heuristics(
+        self,
+        raw_query: str,
+        profile: CandidateProfile,
+        messages: List[str],
+        contradictions: List[str],
+        missing_data: List[str],
+    ) -> Dict[str, Any]:
         query_lower = raw_query.lower()
 
         # Extract profession (default: Go-разработчик)

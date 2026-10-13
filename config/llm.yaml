@@ -1,0 +1,11 @@
+# Конфигурация локальной LLM (Ollama)
+# Установка: https://ollama.com ; затем `ollama pull qwen2.5-coder:3b`
+provider: ollama
+model: qwen2.5-coder:3b
+base_url: http://localhost:11434
+temperature: 0.2
+timeout: 120.0
+max_retries: 2
+retry_delay: 1.0
+max_output_tokens: 512
+enabled: true

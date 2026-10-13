@@ -249,6 +249,9 @@ def main() -> int:
                         help="Discovery source for --report (default: hh)")
     parser.add_argument("--fixture", type=Path, help="Path to fixture JSON for --report-source fixture")
     parser.add_argument("--report-dir", type=Path, default=Path("reports"), help="Output dir for reports")
+    parser.add_argument("--no-llm", action="store_true", help="Disable LLM and use deterministic heuristics only")
+    parser.add_argument("--llm-model", help="Override the Ollama model name (e.g. qwen2.5-coder:7b)")
+    parser.add_argument("--llm-timeout", type=float, help="Override LLM request timeout in seconds")
     args = parser.parse_args()
     terms = tuple(args.text or ())
     if args.prompt_terms:
@@ -259,16 +262,30 @@ def main() -> int:
     # Mode: full multi-agent pipeline
     if args.report:
         from src.vacancies.adapters.hh_adapter import HHAdapter
+        from src.vacancies.llm.client import build_llm_client
         from src.vacancies.orchestrator.orchestrator import (
             OrchestratorLimits,
             VacancyResearchOrchestrator,
         )
+        from src.vacancies.utils.config import ConfigLoader
 
         raw_query = " ".join(terms) if terms else "Go-разработчик, Санкт-Петербург, удалёнка"
         adapter = HHAdapter()
         adapter.scraper.delay = args.scrape_delay
 
-        orch = VacancyResearchOrchestrator(limits=OrchestratorLimits())
+        loader = ConfigLoader()
+        llm = None
+        if not args.no_llm:
+            llm_config = loader.load_llm_config()
+            if args.llm_model:
+                llm_config.model = args.llm_model
+            if args.llm_timeout:
+                llm_config.timeout = args.llm_timeout
+            if llm_config.enabled:
+                llm = build_llm_client(llm_config)
+                print(f"LLM: {llm_config.provider} / {llm_config.model} @ {llm_config.base_url}")
+
+        orch = VacancyResearchOrchestrator(limits=OrchestratorLimits(), llm=llm)
         report = orch.run(
             raw_query=raw_query,
             source=args.report_source,

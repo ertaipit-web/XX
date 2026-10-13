@@ -1,6 +1,6 @@
 # Отчёт по вакансиям Go-разработчика
 
-- Дата и время запуска: 2026-10-13T13:50:09.687956+00:00
+- Дата и время запуска: 2026-10-13T14:27:39.009250+00:00
 - Период поиска: не указан
 - Найдено вакансий: 5
 - Проверено вакансий: 5
@@ -12,27 +12,33 @@
 ## Таблица вакансий
 | Рейтинг | Название | Компания | Зарплата | Формат | ДМС | Соответствие | Интересность | Риски | Дата проверки | Ссылка |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 94 | Senior Go-разработчик (High Load) | TechCorp | 280000–350000 RUB | remote | confirmed | suitable | 86 | - | 2026-10-13T13:50:09.690143+00:00 | [https://hh.ru/vacancy/1001](https://hh.ru/vacancy/1001) |
-| 86 | Lead Golang Engineer | FinBank | 400000–500000 RUB | remote | confirmed | suitable | 54 | - | 2026-10-13T13:50:09.690160+00:00 | [https://hh.ru/vacancy/1004](https://hh.ru/vacancy/1004) |
-| 77 | Go Backend Developer | StartupX | 180000–220000 RUB | hybrid | not_mentioned | suitable | 86 | - | 2026-10-13T13:50:09.690153+00:00 | [https://hh.ru/vacancy/1002](https://hh.ru/vacancy/1002) |
-| 41 | Go-разработчик | UnknownCo | - | unknown | not_mentioned | needs_clarification | 38 | Офисный формат может не соответствовать ожиданиям; Зарплата не указана — требуется уточнение | 2026-10-13T13:50:09.690162+00:00 | [https://hh.ru/vacancy/1005](https://hh.ru/vacancy/1005) |
-| 36 | Go-разработчик (Junior) | SmallCo | 80000–100000 RUB | office | not_mentioned | not_suitable | 0 | Офисный формат может не соответствовать ожиданиям; Много фронтенд/рутинных задач (HTML, CSS, JS) | 2026-10-13T13:50:09.690157+00:00 | [https://hh.ru/vacancy/1003](https://hh.ru/vacancy/1003) |
+| 96 | Lead Golang Engineer | FinBank | 400000–500000 RUB | remote | confirmed | suitable | 90 | - | 2026-10-13T14:27:55.407624+00:00 | [https://hh.ru/vacancy/1004](https://hh.ru/vacancy/1004) |
+| 93 | Senior Go-разработчик (High Load) | TechCorp | 280000–350000 RUB | remote | confirmed | suitable | 80 | Необходимость знания и использования дополнительных технологий (например, DMS); Распределённая работа может быть сложной | 2026-10-13T14:27:55.407602+00:00 | [https://hh.ru/vacancy/1001](https://hh.ru/vacancy/1001) |
+| 72 | Go Backend Developer | StartupX | 180000–220000 RUB | hybrid | not_mentioned | suitable | 80 | Hybrid work format | 2026-10-13T14:27:55.407616+00:00 | [https://hh.ru/vacancy/1002](https://hh.ru/vacancy/1002) |
+| 43 | Go-разработчик | UnknownCo | - | unknown | not_mentioned | needs_clarification | 50 | Не указанная зарплата; Не указан формат работы | 2026-10-13T14:27:55.407626+00:00 | [https://hh.ru/vacancy/1005](https://hh.ru/vacancy/1005) |
+| 34 | Go-разработчик (Junior) | SmallCo | 80000–100000 RUB | office | not_mentioned | not_suitable | 40 | Недостаточное знание Go; Недостаточное знание HTML/CSS/JavaScript | 2026-10-13T14:27:55.407621+00:00 | [https://hh.ru/vacancy/1003](https://hh.ru/vacancy/1003) |
 
 ## Лучшие вакансии
-### Senior Go-разработчик (High Load) — TechCorp
-- Рейтинг: 94
-- Ссылка: https://hh.ru/vacancy/1001
-- Почему подходит: Формат работы подходит: remote; Зарплата указана: 280000 RUB; Подтверждено ДМС; Сильный backend-стек: grpc, kubernetes, kafka, postgresql, load
-
 ### Lead Golang Engineer — FinBank
-- Рейтинг: 86
+- Рейтинг: 96
 - Ссылка: https://hh.ru/vacancy/1004
-- Почему подходит: Формат работы подходит: remote; Зарплата указана: 400000 RUB; Подтверждено ДМС; Сильный backend-стек: grpc, kubernetes, kafka; Go активно используется в задачах
+- Кратко: Лидер Go-разработчиков в FinBank, специализирующийся на разработке распределённых систем, gRPC, Kubernetes, Kafka и ClickHouse. Обучается и участвует в конференциях.
+- Почему подходит: Компания FinBank ищет опытного лидера Go-разработчиков, который способен создавать сложные системы и управлять командой.
+- Что спросить: Какие технологии и подходы используются в проектах FinBank?; Какие конференции и тренинги FinBank проводит для своих сотрудников?; Какие проекты FinBank используют Go-разработку?
+
+### Senior Go-разработчик (High Load) — TechCorp
+- Рейтинг: 93
+- Ссылка: https://hh.ru/vacancy/1001
+- Кратко: Senior Go-разработчик для разработки высоконагруженных сервисов с использованием Go, gRPC, Kafka, Kubernetes и PostgreSQL.
+- Почему подходит: Работодатель TechCorp предлагает возможность работать в удалённом режиме, высокую зарплату и возможность развиваться в сфере разработки высоконагруженных систем.
+- Что спросить: Какие технологии и инструменты используются в проектах TechCorp?; Какие требования к знаниям и опыта у Senior Go-разработчика?; Какие дополнительные возможности и возможности для развития TechCorp предлагаются для Senior Go-разработчика?
 
 ### Go Backend Developer — StartupX
-- Рейтинг: 77
+- Рейтинг: 72
 - Ссылка: https://hh.ru/vacancy/1002
-- Почему подходит: Формат работы подходит: hybrid; Зарплата указана: 180000 RUB; Сильный backend-стек: api, rest, docker, redis, backend
+- Кратко: Backend разработчик на Go с опытом работы в гибридном формате. Опыт разработки микросервисов и REST API.
+- Почему подходит: Ищем опытного Backend разработчика с навыками Go, микросервисов и REST API для работы в гибридном формате.
+- Что спросить: Опыт работы в гибридном формате?; Опыт работы с Redis?; Опыт работы с Docker?
 
 ## Требуют уточнения
 - Go-разработчик (UnknownCo) — https://hh.ru/vacancy/1005

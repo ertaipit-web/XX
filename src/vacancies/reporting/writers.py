@@ -1,13 +1,19 @@
 ﻿from __future__ import annotations
 
 import json
+import logging
 from dataclasses import asdict, is_dataclass
 from datetime import datetime
+from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List
 
 from ..core.contracts import VacancyReport
 from ..core.enums import Currency, DmsStatus, TaxType, VacancyStatus, WorkFormat
+from ..llm.client import BaseLLMClient
+from ..llm.prompts import REPORT_SYSTEM, build_report_prompt
+
+logger = logging.getLogger(__name__)
 
 
 class VacancyReportWriter:
@@ -19,11 +25,8 @@ class VacancyReportWriter:
             return {k: VacancyReportWriter._serialize(v) for k, v in obj.items()}
         if isinstance(obj, list):
             return [VacancyReportWriter._serialize(v) for v in obj]
-        if isinstance(obj, Enum if False else (Currency, DmsStatus, TaxType, VacancyStatus, WorkFormat)):
-            try:
-                return obj.value
-            except Exception:
-                return str(obj)
+        if isinstance(obj, Enum):
+            return obj.value
         if isinstance(obj, datetime):
             return obj.isoformat()
         return obj
@@ -77,7 +80,13 @@ class VacancyReportWriter:
                 lines.append(f"### {v.title} — {v.employer or ''}")
                 lines.append(f"- Рейтинг: {v.score.total}")
                 lines.append(f"- Ссылка: {v.source_url}")
-                lines.append("- Почему подходит: " + ("; ".join(v.career_fit.strong_points) or "-"))
+                if v.llm_summary:
+                    lines.append(f"- Кратко: {v.llm_summary}")
+                lines.append("- Почему подходит: " + (v.llm_why_fits or "; ".join(v.career_fit.strong_points) or "-"))
+                if v.llm_unknowns:
+                    lines.append("- Что неизвестно: " + "; ".join(v.llm_unknowns))
+                if v.llm_what_to_ask:
+                    lines.append("- Что спросить: " + "; ".join(v.llm_what_to_ask))
                 lines.append("")
 
         if report.needs_clarification:
@@ -88,3 +97,46 @@ class VacancyReportWriter:
         with path.open("w", encoding="utf-8") as f:
             f.write("\n".join(lines))
         return path
+
+
+class ReportWriterAgent:
+    """Enriches vacancies with LLM-generated summary cards.
+
+    Falls back silently when the LLM is unavailable, leaving the deterministic
+    template output intact.
+    """
+
+    name: str = "Report Writer Agent"
+
+    def __init__(self, llm: BaseLLMClient | None = None) -> None:
+        self.llm = llm
+
+    def enrich(self, vacancies: List[Any], limit: int = 10) -> Dict[str, Any]:
+        if self.llm is None:
+            return {"success": True, "enriched": 0, "llm": False}
+
+        enriched = 0
+        for v in vacancies[:limit]:
+            salary = (
+                f"{v.salary.from_amount:.0f}-{v.salary.to_amount:.0f}"
+                if v.salary.from_amount is not None and v.salary.to_amount is not None
+                else (f"от {v.salary.from_amount:.0f}" if v.salary.from_amount is not None else "не указана")
+            )
+            try:
+                parsed = self.llm.generate_json(
+                    build_report_prompt(
+                        v.title, v.employer or "", salary, v.work_format.value, v.description or ""
+                    ),
+                    system=REPORT_SYSTEM,
+                )
+            except Exception as e:  # noqa: BLE001
+                logger.warning("LLM report enrichment failed for %s: %s", v.id, e)
+                continue
+            if not parsed:
+                continue
+            v.llm_summary = str(parsed.get("summary") or "") or None
+            v.llm_why_fits = str(parsed.get("why_fits") or "") or None
+            v.llm_unknowns = [str(x) for x in parsed.get("unknowns", []) if x]
+            v.llm_what_to_ask = [str(x) for x in parsed.get("what_to_ask", []) if x]
+            enriched += 1
+        return {"success": True, "enriched": enriched, "llm": True}

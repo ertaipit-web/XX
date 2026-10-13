@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import re
 from dataclasses import asdict
 from datetime import datetime
@@ -13,6 +14,7 @@ import yaml
 
 from ..core.enums import Currency, WorkFormat
 from ..core.models import CandidateProfile
+from ..llm.client import LLMConfig
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +22,7 @@ logger = logging.getLogger(__name__)
 DEFAULT_CONFIG_DIR = Path(__file__).resolve().parent.parent.parent.parent / "config"
 DEFAULT_CANDIDATE_YAML = DEFAULT_CONFIG_DIR / "candidate.yaml"
 DEFAULT_SCORING_YAML = DEFAULT_CONFIG_DIR / "scoring.yaml"
+DEFAULT_LLM_YAML = DEFAULT_CONFIG_DIR / "llm.yaml"
 
 
 def _clean_bom(text: str) -> str:
@@ -107,6 +110,40 @@ class ConfigLoader:
                 data = {k: v / total for k, v in data.items()}
 
         return {str(k): float(v) for k, v in data.items()}
+
+    def load_llm_config(self, path: Path | None = None) -> LLMConfig:
+        """Load LLM provider configuration from YAML file.
+
+        Environment overrides (useful for tests/CI):
+            VACANCIES_LLM_PROVIDER  — force provider (e.g. "mock")
+            VACANCIES_DISABLE_LLM   — "1"/"true" disables LLM entirely
+        """
+        path = path or DEFAULT_LLM_YAML
+        if not path.exists():
+            logger.warning("LLM config not found: %s, using defaults", path)
+            config = LLMConfig()
+        else:
+            text = _clean_bom(path.read_text(encoding="utf-8"))
+            data = yaml.safe_load(text) or {}
+            config = LLMConfig(
+                provider=str(data.get("provider", "ollama")),
+                model=str(data.get("model", "qwen2.5-coder:3b")),
+                base_url=str(data.get("base_url", "http://localhost:11434")),
+                temperature=float(data.get("temperature", 0.2)),
+                timeout=float(data.get("timeout", 120.0)),
+                max_retries=int(data.get("max_retries", 2)),
+                retry_delay=float(data.get("retry_delay", 1.0)),
+                max_output_tokens=int(data.get("max_output_tokens", 512)),
+                enabled=bool(data.get("enabled", True)),
+            )
+
+        env_provider = os.environ.get("VACANCIES_LLM_PROVIDER")
+        if env_provider:
+            config.provider = env_provider
+        if os.environ.get("VACANCIES_DISABLE_LLM", "").lower() in ("1", "true", "yes"):
+            config.enabled = False
+
+        return config
 
     def save_candidate_profile(self, profile: CandidateProfile, path: Path | None = None) -> None:
         """Save candidate profile to YAML file."""

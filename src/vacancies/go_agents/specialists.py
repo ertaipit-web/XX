@@ -16,6 +16,13 @@ from ..core.models import (
     VacancyScore,
 )
 from ..core.scoring import ScoringCalculator
+from ..llm.client import BaseLLMClient
+from ..llm.prompts import (
+    CAREER_FIT_SYSTEM,
+    TECHNICAL_SYSTEM,
+    build_career_fit_prompt,
+    build_technical_prompt,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +66,59 @@ class VacancyVerificationAgent:
 class GoTechnicalAnalyst:
     name: str = "Go Technical Analyst"
 
+    def __init__(self, llm: BaseLLMClient | None = None) -> None:
+        self.llm = llm
+
     def run(self, vacancies: List[Vacancy]) -> Dict[str, Any]:
+        """Analyze technical aspects of vacancies for Go relevance and interest.
+
+        Uses the LLM when available for richer interpretation, otherwise falls
+        back to deterministic keyword heuristics.
+        """
+        if self.llm is not None:
+            llm_ok = 0
+            for v in vacancies:
+                if self._analyze_with_llm(v):
+                    llm_ok += 1
+            if llm_ok:
+                return {"vacancies": vacancies, "success": True, "llm_analyzed": llm_ok}
+            logger.warning("LLM technical analysis produced no results; using heuristics")
+
+        return self._run_heuristics(vacancies)
+
+    def _analyze_with_llm(self, v: Vacancy) -> bool:
+        client = self.llm
+        if client is None:
+            return False
+        try:
+            parsed = client.generate_json(
+                build_technical_prompt(v.title, v.description or "", v.requirements),
+                system=TECHNICAL_SYSTEM,
+            )
+        except Exception as e:  # noqa: BLE001
+            logger.warning("LLM technical analysis failed for %s: %s", v.id, e)
+            return False
+        if not parsed:
+            return False
+
+        def _clamp(val: Any, default: int) -> int:
+            try:
+                return max(0, min(100, int(val)))
+            except (TypeError, ValueError):
+                return default
+
+        v.technical_analysis = TechnicalAnalysis(
+            technologies=[str(x) for x in parsed.get("technologies", []) if x],
+            go_relevance_score=_clamp(parsed.get("go_relevance_score"), 50),
+            task_interest_score=_clamp(parsed.get("task_interest_score"), 50),
+            backend_signals=[str(x) for x in parsed.get("positives", []) if x],
+            concerns=[str(x) for x in parsed.get("concerns", []) if x],
+            positives=[str(x) for x in parsed.get("positives", []) if x],
+            has_confirmed_tech=bool(parsed.get("technologies")),
+        )
+        return True
+
+    def _run_heuristics(self, vacancies: List[Vacancy]) -> Dict[str, Any]:
         """Analyze technical aspects of vacancies for Go relevance and interest."""
         go_signals = ["golang", "go", "goroutine", "gopher", "std", "stdlib", "gofmt", "golangci"]
         backend_signals = [
@@ -152,7 +211,59 @@ class CompensationBenefitsAgent:
 class CareerFitAnalyst:
     name: str = "Career Fit Analyst"
 
+    def __init__(self, llm: BaseLLMClient | None = None) -> None:
+        self.llm = llm
+
     def run(self, vacancies: List[Vacancy]) -> Dict[str, Any]:
+        """Analyze career fit. Uses LLM when available, else heuristics."""
+        if self.llm is not None:
+            llm_ok = 0
+            for v in vacancies:
+                if self._analyze_with_llm(v):
+                    llm_ok += 1
+            if llm_ok:
+                return {"vacancies": vacancies, "success": True, "llm_analyzed": llm_ok}
+            logger.warning("LLM career fit produced no results; using heuristics")
+
+        return self._run_heuristics(vacancies)
+
+    def _analyze_with_llm(self, v: Vacancy) -> bool:
+        client = self.llm
+        if client is None:
+            return False
+        salary = (
+            f"{v.salary.from_amount:.0f}-{v.salary.to_amount:.0f} {v.salary.currency.value}"
+            if v.salary.from_amount is not None and v.salary.to_amount is not None
+            else (f"от {v.salary.from_amount:.0f} {v.salary.currency.value}" if v.salary.from_amount is not None else "не указана")
+        )
+        try:
+            parsed = client.generate_json(
+                build_career_fit_prompt(v.title, v.description or "", v.work_format.value, salary),
+                system=CAREER_FIT_SYSTEM,
+            )
+        except Exception as e:  # noqa: BLE001
+            logger.warning("LLM career fit failed for %s: %s", v.id, e)
+            return False
+        if not parsed:
+            return False
+
+        try:
+            fit_score = max(0, min(100, int(parsed.get("fit_score", 50))))
+        except (TypeError, ValueError):
+            fit_score = 50
+
+        v.career_fit = CareerFitAnalysis(
+            fit_score=fit_score,
+            career_growth_score=fit_score,
+            motivation_score=fit_score,
+            strong_points=[str(x) for x in parsed.get("strong_points", []) if x],
+            risks=[str(x) for x in parsed.get("risks", []) if x],
+            questions_for_interview=[str(x) for x in parsed.get("questions_for_interview", []) if x],
+            recommendation=str(parsed.get("recommendation") or ""),
+        )
+        return True
+
+    def _run_heuristics(self, vacancies: List[Vacancy]) -> Dict[str, Any]:
         """Analyze career fit based on vacancy data."""
         seniority_indicators = {
             "lead": 90, "руковод": 90, "staff": 85, "principal": 85,

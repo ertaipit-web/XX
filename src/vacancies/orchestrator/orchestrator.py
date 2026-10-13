@@ -21,7 +21,8 @@ from ..go_agents.specialists import (
     QualityAssuranceAgent,
     VacancyVerificationAgent,
 )
-from ..reporting.writers import VacancyReportWriter
+from ..reporting.writers import ReportWriterAgent, VacancyReportWriter
+from ..llm.client import BaseLLMClient, build_llm_client
 from ..utils.config import ConfigLoader
 from ..utils.sanitize import sanitize_untrusted_text
 
@@ -58,17 +59,27 @@ class VacancyResearchOrchestrator:
         self,
         limits: OrchestratorLimits | None = None,
         config_loader: ConfigLoader | None = None,
+        llm: BaseLLMClient | None = None,
     ) -> None:
         self.limits = limits or OrchestratorLimits()
         self.config = config_loader or ConfigLoader()
-        self.intake = CareerIntakeAgent()
+
+        # Build the LLM client from config unless one was injected.
+        if llm is not None:
+            self.llm: BaseLLMClient | None = llm
+        else:
+            llm_config = self.config.load_llm_config()
+            self.llm = build_llm_client(llm_config) if llm_config.enabled else None
+
+        self.intake = CareerIntakeAgent(llm=self.llm)
         self.discovery = VacancyDiscoveryAgent()
         self.verifier = VacancyVerificationAgent()
-        self.tech = GoTechnicalAnalyst()
+        self.tech = GoTechnicalAnalyst(llm=self.llm)
         self.comp = CompensationBenefitsAgent()
-        self.fit = CareerFitAnalyst()
+        self.fit = CareerFitAnalyst(llm=self.llm)
         self.dedup = DeduplicationRankingAgent()
         self.qa = QualityAssuranceAgent()
+        self.report_writer = ReportWriterAgent(llm=self.llm)
 
     # ------------------------------------------------------------------
     # Helpers
@@ -206,7 +217,12 @@ class VacancyResearchOrchestrator:
                     pool.submit(self._safe_agent, self.fit.name, self.fit.run, vacancies),
                 ]
                 for f in futures:
-                    res = f.result()
+                    try:
+                        res = f.result(timeout=self.limits.agent_timeout_seconds * max(1, len(vacancies)))
+                    except Exception as e:  # noqa: BLE001 — includes TimeoutError
+                        logger.warning("Parallel analysis timed out/failed: %s", e)
+                        run.errors.append(f"parallel analysis: {e}")
+                        continue
                     if res and not res.get("success", True):
                         run.errors.append(f"{res.get('agent', 'agent')} reported failure")
         else:
@@ -228,6 +244,16 @@ class VacancyResearchOrchestrator:
         run.finished_at = datetime.now(timezone.utc)
         report = VacancyReport(run=run, vacancies=vacancies)
         self._populate_report(report, vacancies, active_profile)
+
+        # --- 7b. LLM report enrichment --------------------------------
+        if self.llm is not None:
+            enr = self._run_with_retry(
+                self.report_writer.name,
+                lambda: self.report_writer.enrich(report.best_vacancies),
+                run,
+            )
+            if enr:
+                run.metadata["report_llm_enriched"] = enr.get("enriched", 0)
 
         # --- 8. QA with limited fix loop ------------------------------
         for iteration in range(self.limits.max_qa_iterations):

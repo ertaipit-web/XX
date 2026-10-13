@@ -30,18 +30,41 @@ src/vacancies/
 ├── go_agents/
 │   ├── agents.py        # CareerIntakeAgent, VacancyDiscoveryAgent
 │   └── specialists.py   # Verification, Technical, Compensation, CareerFit, Dedup, QA
+├── llm/
+│   ├── client.py        # LLMConfig, OllamaClient, MockLLMClient, build_llm_client
+│   └── prompts.py       # системные промпты + security preamble
 ├── adapters/
 │   ├── hh_adapter.py    # HHAdapter: fixture + live scraping
 │   └── hh_scraper.py    # HHWebScraper: curl_cffi TLS fingerprint
 ├── orchestrator/
 │   └── orchestrator.py  # VacancyResearchOrchestrator + OrchestratorLimits
 ├── reporting/
-│   └── writers.py       # VacancyReportWriter (Markdown + JSON)
+│   └── writers.py       # VacancyReportWriter + ReportWriterAgent (LLM)
 ├── utils/
-│   ├── config.py        # ConfigLoader (candidate.yaml, scoring.yaml)
-│   └── sanitize.py      # prompt-injection detection & sanitization
+│   ├── config.py        # ConfigLoader (candidate.yaml, scoring.yaml, llm.yaml)
+│   └── sanitize.py      # prompt-injection detection & neutralization
 └── storage/             # зарезервировано под историю запусков
 ```
+
+## LLM-слой
+
+Локальная модель подключается через Ollama (`config/llm.yaml`). Абстракция
+`BaseLLMClient` даёт две реализации:
+
+- **`OllamaClient`** — реальный вызов локального сервера (`/api/generate`),
+  с retry, таймаутом и ограничением длины вывода.
+- **`MockLLMClient`** — детерминированный ответ для тестов и offline-режима.
+
+Ключевые принципы:
+
+1. **LLM ≠ источник истины.** Рейтинг, дедупликация и обязательные критерии
+   считает детерминированный код; LLM только интерпретирует текст.
+2. **Graceful degradation.** При недоступности LLM каждый агент переходит на
+   эвристики — пайплайн не падает.
+3. **Строгая схема вывода.** Агенты ожидают JSON-объект; клиент извлекает его
+   даже из markdown-обёртки, при неудаче — fallback.
+4. **Безопасность.** Текст вакансии нейтрализуется (prompt injection), системные
+   промпты содержат явный запрет следовать инструкциям из данных.
 
 ## Поток данных (пайплайн)
 

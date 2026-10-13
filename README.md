@@ -23,8 +23,14 @@ Workspace custom agent and a dependency-free Python CLI for collecting vacancy d
 python -m venv .venv
 .venv\Scripts\pip install -r requirements.txt
 
-# Полный пайплайн на тестовых данных (без сети)
+# Локальная LLM через Ollama (без облачных ключей)
+ollama pull qwen2.5-coder:3b
+
+# Полный пайплайн на тестовых данных (LLM + эвристики)
 python tools/hh_vacancies.py --report --report-source fixture --fixture tests/fixtures/hh_sample.json --text "Go-разработчик, удалёнка"
+
+# Только детерминированные эвристики (быстро, без LLM)
+python tools/hh_vacancies.py --report --report-source fixture --fixture tests/fixtures/hh_sample.json --text "Go" --no-llm
 
 # Полный пайплайн с реальным scraping hh.ru
 python tools/hh_vacancies.py --report --report-source hh --text "Go разработчик" --scrape-delay 8
