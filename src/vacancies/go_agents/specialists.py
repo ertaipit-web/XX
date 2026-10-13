@@ -1,8 +1,11 @@
 ﻿from __future__ import annotations
 
+import logging
+import re
+from datetime import datetime, timezone
 from typing import Any, Dict, List
 
-from ..core.enums import DmsStatus, VacancyStatus, WorkFormat, DataCompleteness
+from ..core.enums import Currency, DmsStatus, VacancyStatus, WorkFormat, DataCompleteness
 from ..core.models import (
     BenefitsInfo,
     CareerFitAnalysis,
@@ -14,22 +17,42 @@ from ..core.models import (
 )
 from ..core.scoring import ScoringCalculator
 
+logger = logging.getLogger(__name__)
+
 
 class VacancyVerificationAgent:
     name: str = "Vacancy Verification Agent"
 
     def run(self, vacancies: List[Vacancy]) -> Dict[str, Any]:
+        """Verify vacancies: check URLs, extract facts, mark data completeness."""
         for v in vacancies:
-            if v.checked_at is None:
-                from datetime import datetime
+            v.checked_at = v.checked_at or datetime.now(timezone.utc)
 
-                v.checked_at = datetime.now()
             if not v.source_url:
                 v.status = VacancyStatus.CHECK_FAILED
                 v.non_compliance_reasons.append("Отсутствует проверяемый источник")
             else:
                 v.confirmed_facts.append("Есть ссылка на первоисточник")
-            v.data_completeness = DataCompleteness.PARTIAL
+                v.evidence.append(SourceEvidence(
+                    source_url=v.source_url,
+                    field_name="source_url",
+                ))
+
+            # Determine data completeness
+            has_salary = v.salary.from_amount is not None or v.salary.to_amount is not None
+            has_desc = bool(v.description)
+            has_location = bool(v.location)
+            has_format = v.work_format != WorkFormat.UNKNOWN
+
+            if has_salary and has_desc and has_location and has_format:
+                v.data_completeness = DataCompleteness.FULL
+            elif has_salary and has_desc:
+                v.data_completeness = DataCompleteness.PARTIAL
+            elif has_salary or has_desc:
+                v.data_completeness = DataCompleteness.MINIMAL
+            else:
+                v.data_completeness = DataCompleteness.MINIMAL
+
         return {"vacancies": vacancies, "success": True}
 
 
@@ -37,24 +60,92 @@ class GoTechnicalAnalyst:
     name: str = "Go Technical Analyst"
 
     def run(self, vacancies: List[Vacancy]) -> Dict[str, Any]:
+        """Analyze technical aspects of vacancies for Go relevance and interest."""
+        go_signals = ["golang", "go", "goroutine", "gopher", "std", "stdlib", "gofmt", "golangci"]
+        backend_signals = [
+            "api", "rest", "grpc", "microservice", "kubernetes", "k8s", "docker",
+            "kafka", "rabbitmq", "redis", "postgresql", "mysql", "cassandra",
+            "distributed", "concurrent", "performance", "scalab", "load",
+            "backend", "сервис", "микросервис", "конкурент",
+        ]
+        routine_signals = ["html", "frontend", "css", "javascript", "react", "vue", "wordpress"]
+
         for v in vacancies:
+            desc = (v.description or "").lower()
+            title = (v.title or "").lower()
+            combined = desc + " " + title
+
+            # Go relevance
+            go_count = sum(1 for s in go_signals if s in combined)
+            go_relevance = min(100, go_count * 20 + 20)  # Base 20, up to 100
+
+            # Backend signals
+            backend_count = sum(1 for s in backend_signals if s in combined)
+            backend_signals_list = [s for s in backend_signals if s in combined]
+
+            # Routine signals
+            routine_count = sum(1 for s in routine_signals if s in combined)
+
+            # Task interest score
+            interest = min(100, 30 + backend_count * 8 - routine_count * 10)
+
+            concerns = []
+            if routine_count > 2:
+                concerns.append("Много фронтенд/рутинных задач (HTML, CSS, JS)")
+            if go_count == 0:
+                concerns.append("Go не упоминается в описании")
+
+            positives = []
+            if backend_count >= 3:
+                positives.append(f"Сильный backend-стек: {', '.join(backend_signals_list[:5])}")
+            if go_count >= 2:
+                positives.append("Go активно используется в задачах")
+
             v.technical_analysis = TechnicalAnalysis(
-                technologies=["Go"] if "go" in (v.title or "").lower() or "go" in (v.description or "") else [],
-                task_interest_score=60,
-                has_confirmed_tech=True,
+                technologies=["Go"] if go_count > 0 else [],
+                go_relevance_score=go_relevance,
+                task_interest_score=interest,
+                concurrency_signals=[s for s in backend_signals_list if any(c in s for c in ["concurrent", "load", "scalab"])],
+                backend_signals=backend_signals_list,
+                concerns=concerns,
+                positives=positives,
+                has_confirmed_tech=go_count > 0,
             )
+
         return {"vacancies": vacancies, "success": True}
 
 
 class CompensationBenefitsAgent:
     name: str = "Compensation & Benefits Agent"
 
-    def run(self, vacancies: List[Vacancy]) -> Dict[str, Any]:
+    def run(self, vacancies: List[Vacancy], min_salary: float = 119000) -> Dict[str, Any]:
+        """Normalize and validate salary + benefits."""
+        dms_patterns = [
+            r"\bдмс\b",
+            r"добровольн\w+\s+медицинск\w+\s+страхован",
+            r"корпоративн\w+\s+медицинск",
+            r"medical\s+insurance",
+            r"voluntary\s+medical",
+        ]
+
         for v in vacancies:
+            # DMS detection from description
+            desc = (v.description or "").lower()
             if v.benefits.dms_status == DmsStatus.UNKNOWN:
-                v.benefits.dms_status = DmsStatus.NOT_MENTIONED
-            if v.salary.from_amount and v.salary.from_amount < 119000:
-                v.non_compliance_reasons.append("Зарплата ниже минимального порога 119000 руб/мес")
+                for pattern in dms_patterns:
+                    if re.search(pattern, desc):
+                        v.benefits.dms_status = DmsStatus.CONFIRMED
+                        v.benefits.dms_notes = "Упоминание ДМС найдено в тексте вакансии"
+                        break
+                else:
+                    v.benefits.dms_status = DmsStatus.NOT_MENTIONED
+
+            # Salary check
+            if v.salary.from_amount is not None and v.salary.from_amount < min_salary:
+                v.non_compliance_reasons.append(
+                    f"Зарплата ({v.salary.from_amount:.0f} {v.salary.currency.value}) ниже порога {min_salary:.0f} руб/мес"
+                )
+
         return {"vacancies": vacancies, "success": True}
 
 
@@ -62,34 +153,111 @@ class CareerFitAnalyst:
     name: str = "Career Fit Analyst"
 
     def run(self, vacancies: List[Vacancy]) -> Dict[str, Any]:
+        """Analyze career fit based on vacancy data."""
+        seniority_indicators = {
+            "lead": 90, "руковод": 90, "staff": 85, "principal": 85,
+            "senior": 80, "старший": 80, "lead": 80,
+            "middle": 60, "мидл": 60, "разработчик": 55,
+            "junior": 40, "стаж": 35, "trainee": 35,
+            "intern": 30, "младший": 40,
+        }
+
         for v in vacancies:
+            title = (v.title or "").lower()
+            desc = (v.description or "").lower()
+            combined = title + " " + desc
+
+            # Determine seniority level
+            seniority_score = 50  # default
+            for indicator, score in seniority_indicators.items():
+                if indicator in combined:
+                    seniority_score = max(seniority_score, score)
+
+            # Strong points
+            strong_points = []
+            risks = []
+            questions = []
+
+            if v.work_format in (WorkFormat.REMOTE, WorkFormat.HYBRID):
+                strong_points.append(f"Формат работы подходит: {v.work_format.value}")
+            else:
+                risks.append("Офисный формат может не соответствовать ожиданиям")
+
+            if v.salary.from_amount is not None:
+                strong_points.append(f"Зарплата указана: {v.salary.from_amount:.0f} {v.salary.currency.value}")
+            else:
+                risks.append("Зарплата не указана — требуется уточнение")
+                questions.append("Каков диапазон зарплат для этой позиции?")
+
+            if v.benefits.dms_status == DmsStatus.CONFIRMED:
+                strong_points.append("Подтверждено ДМС")
+            elif v.benefits.dms_status == DmsStatus.NOT_MENTIONED:
+                questions.append("Есть ли ДМС и другие соц benefits?")
+
+            if v.technical_analysis and v.technical_analysis.positives:
+                strong_points.extend(v.technical_analysis.positives[:2])
+            if v.technical_analysis and v.technical_analysis.concerns:
+                risks.extend(v.technical_analysis.concerns[:2])
+
+            questions.append("Каков стек технологий и процессы разработки?")
+
             v.career_fit = CareerFitAnalysis(
-                fit_score=70,
-                strong_points=["Соответствует базовым критериям"],
-                questions_for_interview=["Есть ли подтверждение ДМС?", "Удалёнка/гибрид подтверждены ли?"],
+                fit_score=seniority_score,
+                career_growth_score=min(100, seniority_score + 10),
+                motivation_score=seniority_score,
+                strong_points=strong_points,
+                risks=risks,
+                questions_for_interview=questions,
+                recommendation="Рекомендуется к рассмотрению" if seniority_score >= 60 else "Требует уточнения",
             )
+
         return {"vacancies": vacancies, "success": True}
 
 
 class DeduplicationRankingAgent:
     name: str = "Deduplication & Ranking Agent"
 
-    def run(self, vacancies: List[Vacancy]) -> Dict[str, Any]:
-        seen = set()
-        unique = []
+    def run(self, vacancies: List[Vacancy], weights: Dict[str, float] | None = None, min_salary: float = 119000) -> Dict[str, Any]:
+        """Deduplicate vacancies and calculate ranking scores."""
+        # Deduplication by URL
+        seen_urls: set = set()
+        unique: List[Vacancy] = []
         for v in vacancies:
-            key = v.source_url or v.id
-            if key not in seen:
-                seen.add(key)
-                unique.append(v)
+            url_key = (v.source_url or "").strip()
+            if url_key and url_key in seen_urls:
+                logger.info("Dedup: skipping duplicate %s", url_key)
+                continue
+            if url_key:
+                seen_urls.add(url_key)
+            unique.append(v)
+
+        # Scoring
         for v in unique:
-            v.score = ScoringCalculator.calculate_score(v)
-            if any("ниже минимального" in r for r in v.non_compliance_reasons):
+            v.score = ScoringCalculator.calculate_score(v, weights, min_salary)
+
+            # Defensive mandatory-criteria check (independent of prior agents)
+            below_threshold = (
+                v.salary.from_amount is not None
+                and v.salary.currency == Currency.RUB
+                and v.salary.from_amount < min_salary
+            )
+            if below_threshold and not any("ниже порога" in r for r in v.non_compliance_reasons):
+                v.non_compliance_reasons.append(
+                    f"Зарплата ({v.salary.from_amount:.0f} руб) ниже порога {min_salary:.0f} руб/мес"
+                )
+
+            # Determine status
+            if below_threshold or any("ниже порога" in r for r in v.non_compliance_reasons):
                 v.status = VacancyStatus.NOT_SUITABLE
+            elif v.score.total >= 70 and v.benefits.dms_status == DmsStatus.CONFIRMED:
+                v.status = VacancyStatus.SUITABLE
+            elif v.score.total >= 60:
+                v.status = VacancyStatus.SUITABLE
             elif v.benefits.dms_status == DmsStatus.CONFIRMED:
                 v.status = VacancyStatus.SUITABLE
             else:
                 v.status = VacancyStatus.NEEDS_CLARIFICATION
+
         return {"vacancies": unique, "success": True}
 
 
@@ -97,7 +265,27 @@ class QualityAssuranceAgent:
     name: str = "Quality Assurance Agent"
 
     def run(self, vacancies: List[Vacancy], report: Any = None) -> Dict[str, Any]:
+        """QA check: verify data integrity and report consistency."""
+        issues: List[str] = []
+
         for v in vacancies:
             if not v.source_url:
+                issues.append(f"Вакансия '{v.title}' не имеет source_url")
                 v.status = VacancyStatus.CHECK_FAILED
-        return {"vacancies": vacancies, "success": True}
+
+            if v.salary.from_amount is not None and v.salary.currency == Currency.UNKNOWN:
+                issues.append(f"Вакансия '{v.title}' имеет зарплату с неизвестной валютой")
+
+            if v.work_format == WorkFormat.UNKNOWN and v.location:
+                issues.append(f"Вакансия '{v.title}' имеет локацию, но неизвестный формат работы")
+
+        # Check report structure if provided
+        if report is not None:
+            if not report.vacancies:
+                issues.append("Отчёт содержит 0 вакансий")
+
+        return {
+            "vacancies": vacancies,
+            "success": len(issues) == 0,
+            "issues": issues,
+        }

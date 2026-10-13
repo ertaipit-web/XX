@@ -244,12 +244,43 @@ def main() -> int:
     parser.add_argument("--scrape-delay", type=float, default=4.0, help="Delay between scrape requests in seconds")
     parser.add_argument("--no-enrich", action="store_true", help="Skip fetching detail pages when scraping")
     parser.add_argument("--scrape-limit", type=int, default=30, help="Max vacancies to enrich when scraping")
+    parser.add_argument("--report", action="store_true", help="Run the full multi-agent pipeline and write reports")
+    parser.add_argument("--report-source", choices=["hh", "fixture", "test"], default="hh",
+                        help="Discovery source for --report (default: hh)")
+    parser.add_argument("--fixture", type=Path, help="Path to fixture JSON for --report-source fixture")
+    parser.add_argument("--report-dir", type=Path, default=Path("reports"), help="Output dir for reports")
     args = parser.parse_args()
     terms = tuple(args.text or ())
     if args.prompt_terms:
         terms = tuple(dict.fromkeys((*terms, *DEFAULT_PROMPT_TERMS)))
-    if not terms:
+    if not terms and not args.report:
         parser.error("provide --text or --prompt-terms")
+
+    # Mode: full multi-agent pipeline
+    if args.report:
+        from src.vacancies.adapters.hh_adapter import HHAdapter
+        from src.vacancies.orchestrator.orchestrator import (
+            OrchestratorLimits,
+            VacancyResearchOrchestrator,
+        )
+
+        raw_query = " ".join(terms) if terms else "Go-разработчик, Санкт-Петербург, удалёнка"
+        adapter = HHAdapter()
+        adapter.scraper.delay = args.scrape_delay
+
+        orch = VacancyResearchOrchestrator(limits=OrchestratorLimits())
+        report = orch.run(
+            raw_query=raw_query,
+            source=args.report_source,
+            hh_adapter=adapter,
+            fixture_path=args.fixture,
+            output_dir=args.report_dir,
+            write_reports=True,
+        )
+        summary = report.summary
+        print(json.dumps(summary, ensure_ascii=False, indent=2))
+        print(f"Reports written to {args.report_dir}/latest.md and {args.report_dir}/latest.json")
+        return 0
     if args.max_pages < 1 or args.per_page < 1 or args.per_page > 100:
         parser.error("max-pages must be positive and per-page must be between 1 and 100")
     try:

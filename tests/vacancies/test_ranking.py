@@ -15,6 +15,6 @@ def test_dms_not_confirmed_marked():
         benefits=BenefitsInfo(dms_status=DmsStatus.NOT_MENTIONED),
         score=VacancyScore(salary_fit=100, format_fit=100, dms_fit=0, technical_interest=60, career_potential=50),
     )
-    ScoringCalculator.calculate_score(v)
-    assert v.score.total > 0
+    score = ScoringCalculator.calculate_score(v)
+    assert score.total > 0
     assert v.benefits.dms_status == DmsStatus.NOT_MENTIONED

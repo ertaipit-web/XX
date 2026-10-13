@@ -2,6 +2,39 @@
 
 Workspace custom agent and a dependency-free Python CLI for collecting vacancy data through the official hh.ru API.
 
+## Мультиагентная система анализа вакансий для Go-разработчика
+
+Проект включает мультиагентную систему поиска, анализа, оценки и подготовки
+отчётов о вакансиях Go-разработчика (СПб / удалёнка, от 119 000 руб/мес, ДМС).
+
+Возможности:
+
+- поиск вакансий через публичный scraping hh.ru (без API-токена, curl_cffi TLS fingerprint);
+- профиль кандидата и веса рейтинга в YAML (`config/`);
+- детерминированный рейтинг по критериям ТЗ;
+- разделение «подходят» / «требуют уточнения» / «не подходят»;
+- защита от prompt injection в описаниях вакансий;
+- отчёты в Markdown и JSON с историей запусков;
+- работа без API-ключей на фикстурах.
+
+### Быстрый старт
+
+```powershell
+python -m venv .venv
+.venv\Scripts\pip install -r requirements.txt
+
+# Полный пайплайн на тестовых данных (без сети)
+python tools/hh_vacancies.py --report --report-source fixture --fixture tests/fixtures/hh_sample.json --text "Go-разработчик, удалёнка"
+
+# Полный пайплайн с реальным scraping hh.ru
+python tools/hh_vacancies.py --report --report-source hh --text "Go разработчик" --scrape-delay 8
+```
+
+Результаты: `reports/latest.md`, `reports/latest.json`, `reports/runs/<run_id>.*`.
+
+Документация: [docs/architecture.md](docs/architecture.md),
+[docs/agents.md](docs/agents.md), [docs/operations.md](docs/operations.md).
+
 ## Dry-run
 
 ```powershell
