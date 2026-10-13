@@ -8,7 +8,7 @@ from src.vacancies.reporting.writers import VacancyReportWriter
 from pathlib import Path
 
 
-def test_minimal_scenario() -> None:
+def test_minimal_scenario(tmp_path) -> None:
     run = ResearchRun(run_id="t1", started_at=datetime.now())
     v = Vacancy(
         id="123",
@@ -22,9 +22,7 @@ def test_minimal_scenario() -> None:
         status=VacancyStatus.NEEDS_CLARIFICATION,
     )
     report = VacancyReport(run=run, vacancies=[v], needs_clarification=[v])
-    md = VacancyReportWriter.write_markdown(report, Path("reports/test_min.md"))
-    js = VacancyReportWriter.write_json(report, Path("reports/test_min.json"))
+    md = VacancyReportWriter.write_markdown(report, tmp_path / "test_min.md")
+    js = VacancyReportWriter.write_json(report, tmp_path / "test_min.json")
     assert md.exists()
     assert js.exists()
-    md.unlink()
-    js.unlink()

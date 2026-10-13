@@ -9,7 +9,7 @@ from src.vacancies.core.models import BenefitsInfo, SalaryInfo, Vacancy, Vacancy
 from src.vacancies.reporting.writers import VacancyReportWriter
 
 
-def test_markdown_and_json_generation():
+def test_markdown_and_json_generation(tmp_path):
     run = ResearchRun(run_id='s1', started_at=datetime.now())
     v = Vacancy(
         id='1',
@@ -28,10 +28,8 @@ def test_markdown_and_json_generation():
         best_vacancies=[v],
         needs_clarification=[v],
     )
-    md = VacancyReportWriter.write_markdown(report, Path('reports/latest.md'))
-    js = VacancyReportWriter.write_json(report, Path('reports/latest.json'))
+    md = VacancyReportWriter.write_markdown(report, tmp_path / 'latest.md')
+    js = VacancyReportWriter.write_json(report, tmp_path / 'latest.json')
     assert md.exists() and js.exists()
     assert 'Go-разработчик' in md.read_text(encoding='utf-8')
     assert 'vacancies' in js.read_text(encoding='utf-8')
-    md.unlink()
-    js.unlink()

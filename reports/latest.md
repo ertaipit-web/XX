@@ -1,0 +1,38 @@
+# Отчёт по вакансиям Go-разработчика
+
+- Дата и время запуска: 2026-10-13T13:50:09.687956+00:00
+- Период поиска: не указан
+- Найдено вакансий: 5
+- Проверено вакансий: 5
+- Уникальных после дедупликации: 5
+- Подходящих: 3
+- Требуют уточнения: 1
+- Ограничения: ['Fixture-based mode: results are static test data']
+
+## Таблица вакансий
+| Рейтинг | Название | Компания | Зарплата | Формат | ДМС | Соответствие | Интересность | Риски | Дата проверки | Ссылка |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 94 | Senior Go-разработчик (High Load) | TechCorp | 280000–350000 RUB | remote | confirmed | suitable | 86 | - | 2026-10-13T13:50:09.690143+00:00 | [https://hh.ru/vacancy/1001](https://hh.ru/vacancy/1001) |
+| 86 | Lead Golang Engineer | FinBank | 400000–500000 RUB | remote | confirmed | suitable | 54 | - | 2026-10-13T13:50:09.690160+00:00 | [https://hh.ru/vacancy/1004](https://hh.ru/vacancy/1004) |
+| 77 | Go Backend Developer | StartupX | 180000–220000 RUB | hybrid | not_mentioned | suitable | 86 | - | 2026-10-13T13:50:09.690153+00:00 | [https://hh.ru/vacancy/1002](https://hh.ru/vacancy/1002) |
+| 41 | Go-разработчик | UnknownCo | - | unknown | not_mentioned | needs_clarification | 38 | Офисный формат может не соответствовать ожиданиям; Зарплата не указана — требуется уточнение | 2026-10-13T13:50:09.690162+00:00 | [https://hh.ru/vacancy/1005](https://hh.ru/vacancy/1005) |
+| 36 | Go-разработчик (Junior) | SmallCo | 80000–100000 RUB | office | not_mentioned | not_suitable | 0 | Офисный формат может не соответствовать ожиданиям; Много фронтенд/рутинных задач (HTML, CSS, JS) | 2026-10-13T13:50:09.690157+00:00 | [https://hh.ru/vacancy/1003](https://hh.ru/vacancy/1003) |
+
+## Лучшие вакансии
+### Senior Go-разработчик (High Load) — TechCorp
+- Рейтинг: 94
+- Ссылка: https://hh.ru/vacancy/1001
+- Почему подходит: Формат работы подходит: remote; Зарплата указана: 280000 RUB; Подтверждено ДМС; Сильный backend-стек: grpc, kubernetes, kafka, postgresql, load
+
+### Lead Golang Engineer — FinBank
+- Рейтинг: 86
+- Ссылка: https://hh.ru/vacancy/1004
+- Почему подходит: Формат работы подходит: remote; Зарплата указана: 400000 RUB; Подтверждено ДМС; Сильный backend-стек: grpc, kubernetes, kafka; Go активно используется в задачах
+
+### Go Backend Developer — StartupX
+- Рейтинг: 77
+- Ссылка: https://hh.ru/vacancy/1002
+- Почему подходит: Формат работы подходит: hybrid; Зарплата указана: 180000 RUB; Сильный backend-стек: api, rest, docker, redis, backend
+
+## Требуют уточнения
+- Go-разработчик (UnknownCo) — https://hh.ru/vacancy/1005
