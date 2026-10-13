@@ -1,0 +1,6 @@
+﻿# Веса рейтинга вакансий
+salary_fit: 0.25
+format_fit: 0.25
+dms_fit: 0.15
+technical_interest: 0.25
+career_potential: 0.10

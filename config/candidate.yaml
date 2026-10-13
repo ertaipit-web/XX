@@ -1,0 +1,12 @@
+﻿# Профиль кандидата Go-разработчик
+profession: Go-разработчик
+locations:
+  - Санкт-Петербург
+  - Удалённая работа
+work_formats:
+  - remote
+  - hybrid
+min_salary_rub_month: 119000.0
+require_dms: true
+language: ru
+main_currency: RUB

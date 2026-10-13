@@ -1,0 +1,11 @@
+﻿# Роли и контракты агентов
+- Career Intake Agent: нормализация профиля кандидата
+- Vacancy Discovery Agent: поиск вакансий из доступных источников
+- Vacancy Verification Agent: проверка фактов и подтверждённых источников
+- Go Technical Analyst: технический анализ задач
+- Compensation & Benefits Agent: зарплата и льготы
+- Career Fit Analyst: карьерное соответствие
+- Deduplication & Ranking Agent: дедупликация и рейтинг
+- Report Writer Agent: подготовка отчёта
+- Quality Assurance Agent: контроль качества
+- Vacancy Research Orchestrator: координация работы
