@@ -1,9 +1,12 @@
+# Virtual environment
+.venv/
+
 # Local secrets and generated hh.ru data
 .env
 .env.*
 !.env.example
 *.token
-#/data/hh/
-#/reports/hh/
+data/hh/
+# /reports/hh/
 __pycache__/
 *.py[cod]

@@ -1,0 +1,6 @@
+requests>=2.31
+curl_cffi>=0.16
+beautifulsoup4>=4.12
+lxml>=5.0
+pytest>=8.0
+pytest-mock>=3.10

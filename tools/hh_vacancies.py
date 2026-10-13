@@ -240,6 +240,10 @@ def main() -> int:
     parser.add_argument("--extra", action="append", default=[], metavar="KEY=VALUE")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--public", action="store_true", help="Output public hh.ru search links without API token")
+    parser.add_argument("--scrape", action="store_true", help="Scrape vacancies from public hh.ru HTML pages (no token)")
+    parser.add_argument("--scrape-delay", type=float, default=4.0, help="Delay between scrape requests in seconds")
+    parser.add_argument("--no-enrich", action="store_true", help="Skip fetching detail pages when scraping")
+    parser.add_argument("--scrape-limit", type=int, default=30, help="Max vacancies to enrich when scraping")
     args = parser.parse_args()
     terms = tuple(args.text or ())
     if args.prompt_terms:
@@ -279,6 +283,74 @@ def main() -> int:
         if args.output != Path("data/hh/vacancies.json"):
             args.output.parent.mkdir(parents=True, exist_ok=True)
             args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        return 0
+
+    # Mode: scrape public hh.ru pages (no API token needed)
+    if args.scrape:
+        from src.vacancies.adapters.hh_adapter import HHAdapter
+        from src.vacancies.adapters.hh_scraper import HHScraperError
+
+        # Use area_id default
+        if not area_id:
+            area_id = "113" if args.all_russia else "2"
+
+        adapter = HHAdapter()
+        adapter.scraper.delay = args.scrape_delay
+
+        enrich = not args.no_enrich
+        try:
+            vacancies = adapter.scrape(
+                text=terms[0],
+                area_id=area_id,
+                max_pages=args.max_pages,
+                per_page=args.per_page,
+                extra_params=extra if extra else None,
+                enrich=enrich,
+                enrich_limit=args.scrape_limit,
+            )
+        except HHScraperError as e:
+            raise RuntimeError(f"Scraping failed: {e}") from e
+
+        # Convert Vacancy objects to dict for output
+        items = []
+        for v in vacancies:
+            items.append({
+                "id": v.id,
+                "name": v.title,
+                "employer": v.employer,
+                "url": v.source_url,
+                "area": v.location,
+                "salary": {
+                    "from": v.salary.from_amount,
+                    "to": v.salary.to_amount,
+                    "currency": v.salary.currency.value if v.salary.currency else None,
+                },
+                "work_format": v.work_format.value if hasattr(v.work_format, 'value') else str(v.work_format),
+                "dms": v.benefits.dms_status.value if hasattr(v.benefits.dms_status, 'value') else str(v.benefits.dms_status),
+                "description": v.description or "",
+                "technology_stack": v.technology_stack or [],
+            })
+
+        result = {
+            "mode": "web-scraping",
+            "area": area_name,
+            "area_id": area_id,
+            "queries": list(terms),
+            "retrieved_at": utc_now(),
+            "source": "hh.ru (public HTML pages)",
+            "scraped_at": utc_now(),
+            "enriched": enrich,
+            "items": items,
+            "limitations": [
+                "hh.ru may block excessive scraping (403, 429, captcha)",
+                "Results depend on hh.ru website structure (may break on redesign)",
+                "Respect rate limits; default delay is 4 seconds between requests",
+                "Use for personal research only; check hh.ru terms of service",
+            ],
+        }
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(f"saved {len(items)} vacancies to {args.output}")
         return 0
     if not area_id:
         areas = request_json(f"{API_BASE}/areas", headers)
