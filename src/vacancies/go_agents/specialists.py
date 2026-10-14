@@ -284,9 +284,27 @@ class CareerFitAnalyst:
 
 class DeduplicationRankingAgent:
     name = "Deduplication & Ranking Agent"
+
     def run(self, vacancies: List[Vacancy], weights=None, min_salary: float = 119000) -> Dict[str, Any]:
+        """Deduplicate vacancies and calculate ranking scores.
+
+        Deduplication stages:
+        1. Canonicalize URLs and remove tracking parameters
+        2. Match by source ID if same source
+        3. Cross-source fuzzy matching by employer + title + location
+        4. Mark uncertain matches for review (don't auto-merge)
+        """
+        # Stage 1: Canonicalize URLs
         for v in vacancies:
+            v.canonical_url = self._canonicalize_url(v.source_url)
+
+        # Stage 2: Deduplicate
+        unique = self._deduplicate(vacancies)
+
+        # Stage 3: Scoring and status
+        for v in unique:
             v.score = ScoringCalculator.calculate_score(v, weights, min_salary)
+
             # If salary is in RUB and below threshold, treat as not suitable
             if v.salary.from_amount is not None and v.salary.from_amount < min_salary:
                 v.status = VacancyStatus.NOT_SUITABLE
@@ -298,7 +316,138 @@ class DeduplicationRankingAgent:
                 v.status = VacancyStatus.SUITABLE
             else:
                 v.status = VacancyStatus.NEEDS_CLARIFICATION
-        return {"vacancies": vacancies, "success": True}
+
+        return {"vacancies": unique, "success": True}
+
+    def _canonicalize_url(self, url: str) -> str:
+        """Remove tracking parameters and normalize URL."""
+        if not url:
+            return ""
+        try:
+            from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
+            parsed = urlparse(url)
+            # Remove common tracking params
+            tracking_params = {"utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term",
+                             "yclid", "gclid", "fbclid", "msclkid", "dclid", "ref", "source"}
+            query_params = parse_qs(parsed.query, keep_blank_values=True)
+            filtered = {k: v for k, v in query_params.items() if k.lower() not in tracking_params}
+            new_query = urlencode(filtered, doseq=True)
+            # Normalize: lowercase host, remove trailing slash from path
+            netloc = parsed.netloc.lower()
+            path = parsed.path.rstrip("/")
+            return urlunparse((parsed.scheme, netloc, path, "", new_query, ""))
+        except Exception:
+            return url
+
+    def _deduplicate(self, vacancies: List[Vacancy]) -> List[Vacancy]:
+        """Multi-stage deduplication with cross-source matching."""
+        # Group by canonical URL first (exact match)
+        by_url: Dict[str, Vacancy] = {}
+        for v in vacancies:
+            key = v.canonical_url or v.id
+            if key in by_url:
+                # Merge alternate URLs
+                existing = by_url[key]
+                existing.alternate_urls.append(v.source_url)
+                # Merge source info
+                if v.source_name != existing.source_name:
+                    existing.source_name += f" | {v.source_name}"
+            else:
+                by_url[key] = v
+
+        # Stage 2: Cross-source fuzzy matching by employer+title+location
+        unique = list(by_url.values())
+        merged = set()
+        final: List[Vacancy] = []
+
+        for i, v1 in enumerate(unique):
+            if i in merged:
+                continue
+            # Find potential duplicates
+            duplicates = [v1]
+            for j, v2 in enumerate(unique[i+1:], i+1):
+                if j in merged:
+                    continue
+                if self._is_likely_duplicate(v1, v2):
+                    duplicates.append(v2)
+                    merged.add(j)
+
+            if len(duplicates) > 1:
+                # Merge duplicates
+                primary = duplicates[0]
+                for dup in duplicates[1:]:
+                    primary.alternate_urls.append(dup.source_url)
+                    if dup.source_name != primary.source_name:
+                        primary.source_name += f" | {dup.source_name}"
+                final.append(primary)
+            else:
+                final.append(v1)
+
+        return final
+
+    def _is_likely_duplicate(self, v1: Vacancy, v2: Vacancy) -> bool:
+        """Check if two vacancies from different sources are likely the same."""
+        # Must be from different sources
+        if v1.source_name == v2.source_name:
+            return False
+
+        # Quick checks
+        if not v1.title or not v2.title:
+            return False
+        if not v1.employer or not v2.employer:
+            return False
+
+        # Normalize for comparison
+        title1 = self._normalize_title(v1.title)
+        title2 = self._normalize_title(v2.title)
+        emp1 = self._normalize_employer(v1.employer)
+        emp2 = self._normalize_employer(v2.employer)
+
+        # Title similarity
+        title_match = title1 == title2 or self._similarity(title1, title2) > 0.85
+        # Employer similarity
+        emp_match = emp1 == emp2 or self._similarity(emp1, emp2) > 0.8
+
+        # Location check (if both have location)
+        loc_match = True
+        if v1.location and v2.location:
+            loc1 = v1.location.lower().strip()
+            loc2 = v2.location.lower().strip()
+            loc_match = loc1 == loc2 or self._similarity(loc1, loc2) > 0.8
+
+        return title_match and emp_match and loc_match
+
+    def _normalize_title(self, title: str) -> str:
+        """Normalize title for comparison."""
+        import re
+        t = title.lower()
+        t = re.sub(r"[^\w\s]", " ", t)
+        t = re.sub(r"\s+", " ", t).strip()
+        # Remove common prefixes
+        t = re.sub(r"^(вакансия|vacancy|position|job)\s+", "", t)
+        return t
+
+    def _normalize_employer(self, employer: str) -> str:
+        """Normalize employer name for comparison."""
+        import re
+        e = employer.lower()
+        e = re.sub(r"[^\w\s]", " ", e)
+        e = re.sub(r"\s+", " ", e).strip()
+        # Remove common suffixes
+        e = re.sub(r"\s+(ooo|ооо|зАО|АО|LLC|Inc|Ltd|Group|Corporation|Корпорация)$", "", e)
+        return e
+
+    def _similarity(self, s1: str, s2: str) -> float:
+        """Simple Jaccard similarity on word sets."""
+        if not s1 or not s2:
+            return 0.0
+        w1 = set(s1.split())
+        w2 = set(s2.split())
+        if not w1 or not w2:
+            return 0.0
+        intersection = len(w1 & w2)
+        union = len(w1 | w2)
+        return intersection / union if union > 0 else 0.0
 
 
 class QualityAssuranceAgent:

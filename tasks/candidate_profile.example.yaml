@@ -1,0 +1,29 @@
+# Example logical candidate profile. Adapt field names to the repository's validated schema.
+profession: "Go Developer"
+candidate_level: "junior"
+experience_years: null # unknown; do not infer
+location:
+  city: "Санкт-Петербург"
+  country: "Россия"
+work_preferences:
+  - "remote"
+  - "hybrid_spb"
+salary:
+  minimum: 119000
+  currency: "RUB"
+  period: "month"
+  tax_basis: "net"
+  mandatory: true
+benefits:
+  dms:
+    mode: "prefer"
+    mandatory: false
+preferences:
+  interesting_technical_work: true
+llm:
+  provider: "ollama"
+  cloud_fallback_enabled: false
+search:
+  frequency: "daily"
+report:
+  language: "ru"

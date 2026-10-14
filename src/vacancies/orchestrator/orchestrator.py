@@ -9,7 +9,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
-# HHAdapter imported lazily in run() method
 from ..core.contracts import AgentResult, ResearchRun, VacancyReport
 from ..core.models import CandidateProfile, SearchQuery, Vacancy
 from ..go_agents.agents import CareerIntakeAgent, VacancyDiscoveryAgent
@@ -25,6 +24,11 @@ from ..reporting.writers import ReportWriterAgent, VacancyReportWriter
 from ..llm.client import BaseLLMClient, build_llm_client
 from ..utils.config import ConfigLoader
 from ..utils.sanitize import sanitize_untrusted_text
+from ..adapters.multi_source import MultiSourceAdapter
+from ..adapters.hh_adapter import HHAdapter
+from ..adapters.habr_adapter import HabrAdapter
+from ..adapters.base import SourceAdapter
+from ..storage.history import RunHistory, NewVacancyDetector
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +65,7 @@ class VacancyResearchOrchestrator:
         config_loader: ConfigLoader | None = None,
         llm: BaseLLMClient | None = None,
         disable_llm: bool = False,
+        sources: List[SourceAdapter] | None = None,
     ) -> None:
         self.limits = limits or OrchestratorLimits()
         self.config = config_loader or ConfigLoader()
@@ -73,6 +78,16 @@ class VacancyResearchOrchestrator:
         else:
             llm_config = self.config.load_llm_config()
             self.llm = build_llm_client(llm_config) if llm_config.enabled else None
+
+        # Initialize source adapters
+        self.sources = sources or []
+        if not self.sources:
+            # Default: hh.ru adapter (requires HH_ACCESS_TOKEN)
+            self.sources.append(HHAdapter())
+            # Habr mock adapter (always available for testing)
+            self.sources.append(HabrAdapter())
+
+        self.multi_adapter = MultiSourceAdapter(self.sources)
 
         self.intake = CareerIntakeAgent(llm=self.llm)
         self.discovery = VacancyDiscoveryAgent()
@@ -147,8 +162,7 @@ class VacancyResearchOrchestrator:
         raw_query: str | None = None,
         profile: CandidateProfile | None = None,
         fixtures: List[Vacancy] | None = None,
-        source: str = "test",
-        hh_adapter: Any | None = None,
+        source: str = "multi",
         fixture_path: str | Path | None = None,
         output_dir: Path = Path("reports"),
         write_reports: bool = True,
@@ -181,7 +195,7 @@ class VacancyResearchOrchestrator:
                 lambda: self.discovery.run(
                     query=query,
                     source=source,
-                    hh_adapter=hh_adapter,
+                    multi_adapter=self.multi_adapter,
                     fixture_path=fixture_path,
                 ),
                 run,
@@ -189,6 +203,7 @@ class VacancyResearchOrchestrator:
             if disc:
                 vacancies = disc.get("vacancies", [])
                 run.metadata["limitations"] = disc.get("limitations", [])
+                run.metadata["source_results"] = disc.get("source_results", {})
 
         # Enforce max vacancy limit
         if len(vacancies) > self.limits.max_vacancies:
@@ -276,8 +291,23 @@ class VacancyResearchOrchestrator:
             VacancyReportWriter.write_json(report, output_dir / "latest.json")
             VacancyReportWriter.write_markdown(report, output_dir / "latest.md")
             run_dir = output_dir / "runs"
+            run_dir.mkdir(parents=True, exist_ok=True)
             VacancyReportWriter.write_json(report, run_dir / f"{run_id}.json")
             VacancyReportWriter.write_markdown(report, run_dir / f"{run_id}.md")
+
+            # --- 9. Save to history and detect new/changed vacancies ---
+            history = RunHistory()
+            history.save_run(report)
+
+            detector = NewVacancyDetector(history)
+            changes = detector.detect(vacancies)
+            run.metadata["vacancy_changes"] = detector.format_for_report(changes)
+            report.summary["new_vacancies"] = len(changes["new"])
+            report.summary["changed_vacancies"] = len(changes["changed"])
+            report.summary["removed_vacancies"] = len(changes["removed"])
+
+        # Add source status to metadata
+        run.metadata["source_status"] = self.multi_adapter.get_all_statuses()
 
         return report
 

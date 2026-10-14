@@ -1,63 +1,167 @@
 ﻿# Роли и контракты агентов
 
-Все агенты следуют общему контракту: `run(...) -> Dict[str, Any]`, где результат
-содержит минимум ключ `success`. Идентификация агента — поле `name`.
+## Общие принципы
+- Каждый агент наследуется от `AgentBase` (name, run())
+- Возвращает `Dict[str, Any]` с ключами: `success`, `data`/`vacancies`, `errors`/`messages`
+- Ошибки не маскируются — пробрасываются в `ResearchRun.agent_results` + `errors`
+- LLM-агенты имеют fallback на эвристики при недоступности/ошибке LLM
 
-> **LLM (опционально).** Агенты 1, 4, 6 и Report Writer используют локальную
-> модель через `llm`-параметр; при её отсутствии/ошибке переходят на
-> детерминированные эвристики. Рейтинг и обязательные критерии всегда считает
-> код, а не LLM. См. `docs/operations.md` → «Локальная LLM (Ollama)».
+---
 
-## 1. Career Intake Agent (`go_agents/agents.py`)
-- **Ответственность:** разбор запроса → валидированный `CandidateProfile`.
-- **Вход:** `raw_query: str | None`, `profile: CandidateProfile | None`.
-- **Выход:** `{profile, messages, contradictions, missing_data}`.
-- **Ограничение:** не придумывает характеристики кандидата; фиксирует противоречия.
+## 1. Career Intake Agent
+**Класс:** `CareerIntakeAgent` (`go_agents/agents.py`)
+**LLM:** Опционально
+**Вход:** `raw_query` (str), `profile` (CandidateProfile, optional)
+**Выход:**
+```python
+{
+    "profile": CandidateProfile,
+    "messages": List[str],
+    "contradictions": List[str],
+    "missing_data": List[str],
+}
+```
+**Поведение:**
+- LLM парсит свободный текст → структурированный профиль
+- Fallback: эвристики (regex для зарплаты, ключевые слова для локации/формата)
+- Не выдумывает неизвестные поля → оставляет `null` / `missing_data`
 
-## 2. Vacancy Discovery Agent (`go_agents/agents.py`)
-- **Ответственность:** сбор вакансий из источников.
-- **Вход:** `SearchQuery`, `source` (`hh` | `fixture` | `test`), адаптер/фикстура.
-- **Выход:** `{vacancies, source, limitations}`.
-- **Ограничение:** каждая вакансия имеет проверяемый `source_url`; при отказе
-  источника возвращает пустой список и фиксирует ограничение.
+---
 
-## 3. Vacancy Verification Agent (`go_agents/specialists.py`)
-- **Ответственность:** проверка источника, извлечение фактов, оценка полноты.
-- **Выход:** вакансии с `confirmed_facts`, `evidence`, `data_completeness`.
-- **Ограничение:** отсутствие данных не становится отрицательным фактом.
+## 2. Vacancy Discovery Agent
+**Класс:** `VacancyDiscoveryAgent` (`go_agents/agents.py`)
+**LLM:** Нет
+**Вход:** `query` (SearchQuery), `source` (str), `multi_adapter`, `fixture_path`
+**Выход:**
+```python
+{
+    "vacancies": List[Vacancy],
+    "source": str,
+    "limitations": List[str],
+    "source_results": Dict[str, List[Vacancy]],
+}
+```
+**Источники:** `multi` (все), `hh` (hh.ru), `fixture` (тестовые данные)
+**Поведение:** Делегирует поиск `MultiSourceAdapter`; агрегирует результаты и limitations
 
-## 4. Go Technical Analyst (`go_agents/specialists.py`)
-- **Ответственность:** технический анализ (Go, backend, конкурентность, рутина).
-- **Выход:** `TechnicalAnalysis` (go_relevance_score, task_interest_score, concerns).
-- **Ограничение:** не приписывает технологии, не подтверждённые описанием.
+---
 
-## 5. Compensation & Benefits Agent (`go_agents/specialists.py`)
-- **Ответственность:** нормализация зарплаты и льгот, проверка порога.
-- **Выход:** обновлённые `SalaryInfo`/`BenefitsInfo`, `non_compliance_reasons`.
-- **Ограничение:** не вычисляет net из gross без обоснованных допущений.
+## 3. Vacancy Verification Agent
+**Класс:** `VacancyVerificationAgent` (`go_agents/specialists.py`)
+**LLM:** Нет
+**Вход:** `vacancies` (List[Vacancy])
+**Выход:** `{"vacancies": List[Vacancy], "success": bool}`
+**Действия:**
+- `checked_at = now`
+- Проверка `source_url` → `CHECK_FAILED` если нет
+- `evidence` + `confirmed_facts` для каждого поля
+- `data_completeness`: FULL/PARTIAL/MINIMAL/UNKNOWN
 
-## 6. Career Fit Analyst (`go_agents/specialists.py`)
-- **Ответственность:** карьерное соответствие, риски, вопросы для интервью.
-- **Выход:** `CareerFitAnalysis` (fit_score, strong_points, risks, questions).
-- **Ограничение:** не проводит психологическую диагностику; выводы — из описания.
+---
 
-## 7. Deduplication & Ranking Agent (`go_agents/specialists.py`)
-- **Ответственность:** дедупликация по URL + детерминированный рейтинг.
-- **Выход:** уникальные вакансии с `VacancyScore` и статусом.
-- **Ограничение:** баллы считает `ScoringCalculator`, а не LLM; обязательные
-  нарушения → `not_suitable`.
+## 4. Go Technical Analyst
+**Класс:** `GoTechnicalAnalyst` (`go_agents/specialists.py`)
+**LLM:** Опционально
+**Вход:** `vacancies` (List[Vacancy])
+**Выход:** `{"vacancies": List[Vacancy], "success": bool, "llm_analyzed": int}`
+**LLM JSON схема:**
+```json
+{
+  "task_interest_score": 0-100,
+  "go_relevance_score": 0-100,
+  "technologies": ["Go", "gRPC"],
+  "positives": ["strong backend"],
+  "concerns": ["no Go mentioned"]
+}
+```
+**Эвристики:** Go signals, backend signals, routine signals → `task_interest_score`
 
-## 8. Report Writer Agent (`reporting/writers.py`)
-- **Ответственность:** генерация Markdown и JSON.
-- **Ограничение:** не добавляет факты, отсутствующие в результатах агентов.
+---
 
-## 9. Quality Assurance Agent (`go_agents/specialists.py`)
-- **Ответственность:** проверка целостности и непротиворечивости.
-- **Выход:** `{success, issues}`.
-- **Ограничение:** не исправляет факты без источника; возвращает на исправление.
+## 5. Compensation & Benefits Agent
+**Класс:** `CompensationBenefitsAgent` (`go_agents/specialists.py`)
+**LLM:** Нет
+**Вход:** `vacancies`, `min_salary` (float)
+**Выход:** `{"vacancies": List[Vacancy], "success": bool}`
+**Действия:**
+- ДМС: regex поиск в description → `dms_status = CONFIRMED` + evidence
+- Зарплата: `VacancyNormalizer.convert_to_monthly_net()` → сравнение с порогом
+- `non_compliance_reasons` если ниже порога
 
-## Оркестратор — Vacancy Research Orchestrator (`orchestrator/orchestrator.py`)
-- **Ответственность:** координация всех этапов, retry, лимиты, запись отчётов.
-- **Лимиты (`OrchestratorLimits`):** `max_vacancies`, `max_retries`,
-  `retry_delay_seconds`, `max_qa_iterations`, `enable_parallel_analysis`.
-- **Ограничение:** конечное число итераций; без бесконечного самоулучшения.
+---
+
+## 6. Career Fit Analyst
+**Класс:** `CareerFitAnalyst` (`go_agents/specialists.py`)
+**LLM:** Опционально
+**Вход:** `vacancies` (List[Vacancy])
+**Выход:** `{"vacancies": List[Vacancy], "success": bool, "llm_analyzed": int}`
+**LLM JSON схема:**
+```json
+{
+  "fit_score": 0-100,
+  "strong_points": ["remote", "modern stack"],
+  "risks": ["no team info"],
+  "questions_for_interview": ["team size?"],
+  "recommendation": "подходит"
+}
+```
+**Эвристики:** seniority indicators (lead/senior/middle/junior) → `fit_score`
+
+---
+
+## 7. Deduplication & Ranking Agent
+**Класс:** `DeduplicationRankingAgent` (`go_agents/specialists.py`)
+**LLM:** Нет
+**Вход:** `vacancies`, `weights` (dict), `min_salary` (float)
+**Выход:** `{"vacancies": List[Vacancy], "success": bool}`
+**Дедупликация (3 этапа):**
+1. **URL canonicalization** — убираем tracking params (utm_, gclid, fbclid, ref, source)
+2. **Source ID match** — exact match по canonical URL
+3. **Cross-source fuzzy** — employer+title+location similarity (>0.85/0.8)
+**Скоринг:** `ScoringCalculator.calculate_score()` → `VacancyScore`
+**Статусы:**
+- `NOT_SUITABLE` — зарплата < порога (RUB)
+- `SUITABLE` — score >= 60
+- `NEEDS_CLARIFICATION` — остальное
+
+---
+
+## 8. Quality Assurance Agent
+**Класс:** `QualityAssuranceAgent` (`go_agents/specialists.py`)
+**LLM:** Нет
+**Вход:** `vacancies`, `report` (optional)
+**Выход:** `{"vacancies", "success": bool, "issues": List[str]}`
+**Проверки:**
+- `source_url` present
+- currency != UNKNOWN при наличии зарплаты
+- work_format известен при наличии location
+- report.vacancies не пуст
+**Fix-loop:** Orchestrator вызывает до 2 итераций, пересчитывает dedup/score
+
+---
+
+## 9. Report Writer Agent
+**Класс:** `ReportWriterAgent` (`reporting/writers.py`)
+**LLM:** Опционально
+**Вход:** `best_vacancies` (List[Vacancy]), `limit` (int)
+**Выход:** `{"enriched": int, "skipped": int}`
+**LLM JSON схема:**
+```json
+{
+  "summary": "Хорошая вакансия",
+  "why_fits": "Соответствует стеку",
+  "unknowns": ["размер команды"],
+  "what_to_ask": ["какой процесс релизов?"]
+}
+```
+Пишет: `latest.md`, `latest.json`, `runs/<run_id>.*`
+
+---
+
+## Контракты данных
+Все модели в `src/vacancies/core/models.py`:
+- `CandidateProfile` — профиль (junior, 119k net, remote/hybrid, dms_mode)
+- `Vacancy` — полная модель с evidence, анализами, скором, статусом
+- `SalaryInfo` — from/to, currency, tax_type, period
+- `VacancyScore` — 5 компонентов + total + weights + explanation
+- `ResearchRun` / `VacancyReport` — метаданные запуска и итоговый отчёт

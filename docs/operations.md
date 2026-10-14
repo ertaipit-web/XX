@@ -1,178 +1,205 @@
 ﻿# Инструкции по запуску и диагностике
 
 ## Установка зависимостей
-
 ```bash
-python -m venv .venv
-# Windows (PowerShell):
-.venv\Scripts\pip install -r requirements.txt
-# Linux/macOS:
-.venv/bin/pip install -r requirements.txt
+# Основные зависимости (std + pyyaml)
+pip install pyyaml requests
+
+# Для LLM (Ollama)
+pip install requests  # уже есть
+
+# Для hh.ru public scraping (опционально)
+pip install curl_cffi beautifulsoup4
+
+# Для тестов
+pip install pytest pytest-mock
 ```
-
-Зависимости: `requests`, `curl_cffi`, `beautifulsoup4`, `lxml`, `pyyaml`,
-`pytest`, `pytest-mock`.
-
-## Запуск тестов
-
-```bash
-python -m pytest tests/ -v
-```
-
-Все тесты используют фикстуры и моки — внешние сервисы не нужны.
-
-## Запуск полного пайплайна
-
-На тестовых фикстурах (без сети):
-
-```bash
-python tools/hh_vacancies.py --report --report-source fixture \
-    --fixture tests/fixtures/hh_sample.json \
-    --text "Go-разработчик, удалёнка, от 150000"
-```
-
-С реальным scraping hh.ru (без API-токена):
-
-```bash
-python tools/hh_vacancies.py --report --report-source hh \
-    --text "Go разработчик" --scrape-delay 8
-```
-
-Результаты: `reports/latest.md`, `reports/latest.json`,
-`reports/runs/<run_id>.{md,json}`.
-
-## Только scraping (без анализа)
-
-```bash
-python tools/hh_vacancies.py --text "Go разработчик" --area-id 2 \
-    --max-pages 1 --per-page 20 --scrape --scrape-delay 8 \
-    --output data/hh/scrape.json
-```
-
-## Режим без API-ключей
-
-Система работает без ключей в двух режимах:
-- `--report-source fixture` — статические данные;
-- `--report-source hh` — публичный scraping hh.ru.
-
-API-токен `HH_ACCESS_TOKEN` требуется только для официального API hh.ru
-(режим без `--scrape`/`--report`).
 
 ## Конфигурация
 
-- `config/candidate.yaml` — профиль кандидата.
-- `config/scoring.yaml` — веса рейтинга (должны суммироваться к 1.0).
-- `config/llm.yaml` — локальная LLM (Ollama).
-- Секреты — в `.env` (не коммитится). Шаблон: `.env.example`.
-
-## Локальная LLM (Ollama)
-
-Система использует локальную модель через [Ollama](https://ollama.com) —
-без облачных ключей и без отправки данных наружу.
-
-### Установка и запуск
-
-```powershell
-# 1. Установить Ollama (если ещё нет): https://ollama.com/download
-# 2. Запустить сервер (обычно стартует автоматически)
-ollama serve
-# 3. Скачать модель
-ollama pull qwen2.5-coder:3b
-# 4. Проверить
-ollama list
+### 1. Профиль кандидата (`config/candidate.yaml`)
+```yaml
+profession: "Go Developer"
+candidate_level: "junior"
+experience_years: null
+location:
+  city: "Санкт-Петербург"
+  country: "Россия"
+work_preferences:
+  - "remote"
+  - "hybrid_spb"
+salary:
+  minimum: 119000
+  currency: "RUB"
+  period: "month"
+  tax_basis: "net"
+  is_mandatory: true
+benefits:
+  dms:
+    mode: "prefer"      # prefer | required
+    required: false
+preferences:
+  interesting_technical_work: true
+llm:
+  provider: "ollama"
+  cloud_fallback_enabled: false
+search:
+  frequency: "daily"
+report:
+  language: "ru"
 ```
 
-### Настройка
-
-`config/llm.yaml`:
-
+### 2. Веса скоринга (`config/scoring.yaml`)
 ```yaml
-provider: ollama
-model: qwen2.5-coder:3b
-base_url: http://localhost:11434
+salary_fit: 0.25
+format_fit: 0.25
+dms_fit: 0.15
+technical_interest: 0.25
+career_potential: 0.10
+```
+
+### 3. LLM (`config/llm.yaml`)
+```yaml
+provider: "ollama"
+model: "qwen2.5-coder:3b"
+base_url: "http://localhost:11434"
 temperature: 0.2
 timeout: 120.0
 max_retries: 2
+retry_delay: 1.0
 max_output_tokens: 512
 enabled: true
 ```
 
-### Выбор модели
+### 4. Переменные окружения (`.env`)
+```bash
+# hh.ru API токен (для официального API)
+HH_ACCESS_TOKEN=your_token_here
 
-| Модель | Размер | Скорость (1 вызов) | Качество | Рекомендация |
-|--------|--------|--------------------|----------|--------------|
-| qwen2.5-coder:1.5b | 986 MB | ~5 с | базовое | очень слабое железо |
-| qwen2.5-coder:3b | 1.9 GB | ~12 с | хорошее | **по умолчанию** |
-| qwen2.5-coder:7b | 4.7 GB | ~73 с | хорошее | если есть время |
-| qwen3:8b | 5.2 GB | медленно | хорошее (thinking) | сложный анализ |
+# Переопределение LLM провайдера (для тестов/CI)
+VACANCIES_LLM_PROVIDER=mock
 
-3b даёт качество, сопоставимое с 7b, при ~6x меньшем времени. Для прогона на
-5 вакансиях полный пайплайн занимает ~3.5 минуты на 3b.
-
-### Управление через CLI
-
-```powershell
-# Полный пайплайн с LLM (по умолчанию)
-python tools/hh_vacancies.py --report --report-source fixture --fixture tests/fixtures/hh_sample.json --text "Go-разработчик"
-
-# Другая модель
-python tools/hh_vacancies.py --report --report-source fixture --fixture tests/fixtures/hh_sample.json --text "Go" --llm-model qwen2.5-coder:7b
-
-# Без LLM — только детерминированные эвристики (быстро)
-python tools/hh_vacancies.py --report --report-source fixture --fixture tests/fixtures/hh_sample.json --text "Go" --no-llm
+# Отключить LLM полностью
+VACANCIES_DISABLE_LLM=1
 ```
 
-### Что делает LLM, а что — код
+## Режимы работы
 
-| Этап | Кто выполняет |
-|------|---------------|
-| Расчёт рейтинга, дедупликация | **детерминированный код** |
-| Проверка обязательных критериев | **детерминированный код** |
-| Нормализация зарплаты | **детерминированный код** |
-| Разбор свободного запроса | LLM (fallback: эвристики) |
-| Оценка технической интересности | LLM (fallback: эвристики) |
-| Карьерный анализ, риски, вопросы | LLM (fallback: эвристики) |
-| Карточки в отчёте | LLM (fallback: шаблон) |
+### Ручной запуск (Python)
+```python
+from src.vacancies.orchestrator.orchestrator import VacancyResearchOrchestrator
+from src.vacancies.core.enums import WorkFormat, DmsStatus, TaxType, Currency
+from src.vacancies.core.models import Vacancy, SalaryInfo, BenefitsInfo
 
-При недоступности Ollama или ошибке LLM система автоматически переключается
-на эвристики — пайплайн не падает.
+orch = VacancyResearchOrchestrator(disable_llm=True)  # или без disable_llm для LLM
 
-### Переменные окружения
+# С фикстурами (оффлайн)
+v = Vacancy(
+    id="1", title="Go-разработчик", employer="TestCo",
+    source_url="https://hh.ru/vacancy/1",
+    work_format=WorkFormat.REMOTE,
+    salary=SalaryInfo(from_amount=140000, currency=Currency.RUB, tax_type=TaxType.NET),
+    benefits=BenefitsInfo(dms_status=DmsStatus.NOT_MENTIONED),
+)
+rep = orch.run(fixtures=[v])
+```
 
-- `VACANCIES_DISABLE_LLM=1` — полностью отключить LLM.
-- `VACANCIES_LLM_PROVIDER=mock` — подменить провайдер (тесты/CI).
+### Ежедневный запуск (cron / Windows Task Scheduler)
 
-### Безопасность
+**Linux/macOS (cron):**
+```bash
+# Каждый день в 09:00
+0 9 * * * cd /path/to/XX && VACANCIES_LLM_PROVIDER=ollama python -m src.vacancies.cli daily >> logs/daily.log 2>&1
+```
 
-Текст вакансий — недоверенный. Перед подачей в LLM он проходит через
-`sanitize_untrusted_text`, который детектирует и **нейтрализует** попытки
-prompt injection (заменяет инструкции-подобные фрагменты плейсхолдером и
-оборачивает текст в guard-маркеры). Системные промпты содержат явный запрет
-следовать инструкциям из текста вакансии.
+**Windows (Task Scheduler):**
+1. Создать задачу: "Ежедневно в 09:00"
+2. Действие: `python.exe -m src.vacancies.cli daily`
+3. Рабочая папка: `C:\Git\XX`
 
-### Диагностика
+### CLI (в разработке)
+```bash
+# Ежедневный запуск
+python -m src.vacancies.cli daily
 
-- **`Connection refused` / LLM недоступна** — проверьте `ollama serve` и
-  `base_url` в `config/llm.yaml`. Система продолжит работу на эвристиках.
-- **Очень медленно** — смените модель на меньшую (`--llm-model qwen2.5-coder:1.5b`)
-  или запустите с `--no-llm`.
-- **Модель вернула не-JSON** — клиент извлекает JSON из markdown-обёрток;
-  если не удалось, агент переходит на эвристики.
+# Ручной поиск с запросом
+python -m src.vacancies.cli search "Go разработчик remote" --source multi
 
-## Диагностика (общая)
+# Только фикстуры (тест)
+python -m src.vacancies.cli test
+```
 
-- **403 / 429 / captcha от hh.ru** — снизьте частоту (`--scrape-delay`),
-  смените IP. При обнаружении анти-бота диагностический HTML сохраняется в
-  `data/hh/scrape-diag.html`.
-- **0 вакансий** — проверьте доступность источника; оркестратор запишет
-  ограничения в `run.metadata["limitations"]`.
-- **QA находит проблемы** — см. `run.metadata["qa_issues"]`; цикл исправления
-  ограничен `max_qa_iterations`.
-- **Prompt injection** — количество помеченных вакансий в
-  `run.metadata["injection_flagged"]`.
+## Получение hh.ru API токена
+1. Зарегистрируйте приложение на https://dev.hh.ru/
+2. Получите `client_id` и `client_secret`
+3. Оформите OAuth2 авторизацию (Authorization Code flow)
+4. Сохраните `access_token` в `HH_ACCESS_TOKEN` env variable
 
-## Ограничения scraping
+**Без токена:** работает public fallback (генерация ссылок на поиск), но данные ограничены.
 
-- hh.ru может блокировать частые запросы (403/429/captcha).
-- Парсинг зависит от структуры сайта и может сломаться при редизайне.
-- Использовать для личных исследований; соблюдать условия hh.ru.
+## Запуск тестов
+```bash
+# Все тесты (кроме требующих curl_cffi)
+python -m pytest tests/vacancies/ tests/test_hh_vacancies.py -v -k "not OrchestratorDisableLLM"
+
+# Только unit-тесты
+python -m pytest tests/vacancies/test_min_req.py tests/vacancies/test_core.py tests/vacancies/test_scenarios.py tests/vacancies/test_ranking.py -v
+
+# LLM тесты (с MockLLMClient)
+python -m pytest tests/vacancies/test_llm.py -v
+```
+
+## Структура отчётов
+```
+reports/
+├── latest.md           # Последний Markdown отчёт
+├── latest.json         # Последний JSON отчёт
+├── runs/
+│   ├── <run_id>.md     # История запусков
+│   └── <run_id>.json
+history/
+├── index.json          # Индекс запусков
+└── runs/
+    └── <run_id>.json   # Полные данные запуска
+```
+
+## Диагностика
+
+### Типичные проблемы
+
+| Проблема | Решение |
+|----------|---------|
+| `ModuleNotFoundError: curl_cffi` | `pip install curl_cffi` или используйте `source="fixture"` |
+| `HH_ACCESS_TOKEN not set` | Добавьте токен в `.env` или используйте public mode |
+| `Ollama connection refused` | Запустите `ollama serve` или добавьте `VACANCIES_DISABLE_LLM=1` |
+| `Rate limit (HTTP 429)` | Увеличьте задержки, уменьшите `per_page`/`max_pages` |
+| `LLM timeout` | Увеличьте `timeout` в `config/llm.yaml` |
+
+### Логирование
+```python
+import logging
+logging.basicConfig(level=logging.DEBUG)
+# Или через env:
+# PYTHONPATH=. python -m src.vacancies.cli daily 2>&1 | tee log.txt
+```
+
+### Проверка конфигурации
+```python
+from src.vacancies.utils.config import ConfigLoader
+cfg = ConfigLoader()
+profile = cfg.load_candidate_profile()
+weights = cfg.load_scoring_weights()
+llm_cfg = cfg.load_llm_config()
+print(profile, weights, llm_cfg)
+```
+
+## Оффлайн / тестовый режим
+- Все тесты работают без сети (`MockLLMClient`, фикстуры в `tests/fixtures/`)
+- Фикстуры помечены как `synthetic/fixture data` в метаданных
+- Не выдавайте фикстуры за реальные вакансии
+
+## Безопасность
+- Не коммитьте `.env`, токены, API ключи
+- Используйте `.env.example` как шаблон
+- Отчёты не содержат секретов (проверяется в QA)
+- Текст вакансий санитизируется перед LLM (prompt injection защита)

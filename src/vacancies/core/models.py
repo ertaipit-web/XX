@@ -124,6 +124,7 @@ class Vacancy:
     employer: Optional[str] = None
     source_url: str = ""
     alternate_urls: List[str] = field(default_factory=list)
+    canonical_url: str = ""
     source_name: str = "unknown"
     published_at: Optional[datetime] = None
     checked_at: Optional[datetime] = None

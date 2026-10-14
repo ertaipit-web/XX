@@ -1,138 +1,115 @@
-﻿# Архитектура мультиагентной системы поиска вакансий для Go-разработчика
+﻿# Архитектура мультиагентной системы поиска Go-вакансий
 
-Система реализует команду специализированных агентов во главе с оркестратором.
-Каждому агенту назначена чёткая ответственность, типизированные контракты и
-ограниченные инструменты. Все изменения выполняются в ветке `dev`.
+## Обзор
+Система реализует оркестратор (`VacancyResearchOrchestrator`), координирующий 9 специализированных агентов. Каждый агент имеет чёткую ответственность, типизированные контракты и ограниченные инструменты.
 
-## Принципы
+## Компоненты
 
-1. **Сначала детерминированный код.** Рейтинг, дедупликация, нормализация и
-   проверка обязательных критериев реализованы детерминированно. LLM не
-   используется для расчёта баллов — только для интерпретации текста (опционально).
-2. **Типизированные контракты.** Все сущности описаны `@dataclass` в
-   `src/vacancies/core/models.py` и `core/contracts.py`.
-3. **Неизвестность ≠ отрицание.** Отсутствие данных (зарплата, ДМС, формат)
-   помечается явными статусами (`unknown`, `not_mentioned`), а не нулями.
-4. **Недоверенный внешний ввод.** Текст вакансий санитизируется на предмет
-   prompt injection (`utils/sanitize.py`).
-5. **Ограниченные ресурсы.** Оркестратор использует лимиты: max_vacancies,
-   max_retries, max_qa_iterations, timeout.
+### Orchestrator (`src/vacancies/orchestrator/orchestrator.py`)
+- **VacancyResearchOrchestrator** — главный класс, управляющий pipeline
+- **OrchestratorLimits** — лимиты безопасности (макс. вакансии, ретраи, таймауты, QA-итерации)
+- Этапы:
+  1. **Intake** — парсинг запроса в CandidateProfile
+  2. **Discovery** — сбор вакансий из источников
+  3. **Sanitize** — санитизация недоверенного текста (prompt injection защита)
+  4. **Verify** — проверка источников, evidence extraction
+  5. **Analysis** — параллельный запуск Tech/Comp/Fit агентов
+  5. **Dedup/Rank** — дедупликация, скоринг, статусы
+  6. **Report** — формирование Markdown + JSON
+  7. **LLM Enrichment** — опциональное обогащение карточек
+  8. **QA** — проверка + ограниченный fix-loop (max 2 итерации)
+  9. **History** — сохранение, детекция новых/изменённых вакансий
 
-## Структура модулей
+### Agents (`src/vacancies/go_agents/`)
+| Агент | Ответственность | LLM |
+|-------|----------------|-----|
+| CareerIntakeAgent | Парсинг запроса → CandidateProfile | Да (опционально) |
+| VacancyDiscoveryAgent | Поиск через MultiSourceAdapter | Нет |
+| VacancyVerificationAgent | Проверка URL, evidence, completeness | Нет |
+| GoTechnicalAnalyst | Технический анализ Go/Backend задач | Да (опционально) |
+| CompensationBenefitsAgent | Зарплата (net/gross/period), ДМС детекция | Нет |
+| CareerFitAnalyst | Карьерное соответствие, риски, вопросы | Да (опционально) |
+| DeduplicationRankingAgent | Дедуп (URL canonicalization, cross-source), скоринг | Нет |
+| QualityAssuranceAgent | Валидация отчёта, fix-loop | Нет |
+| ReportWriterAgent | LLM-обогащение карточек | Да (опционально) |
 
+### Adapters (`src/vacancies/adapters/`)
+| Адаптер | Источник | Статус |
+|---------|----------|--------|
+| `HHAdapter` | hh.ru API (OAuth) / public fallback | Рабочий |
+| `HabrAdapter` | habr.com Career API | Mock (готов к интеграции) |
+| `GenericJSONFeedAdapter` | Любой JSON-фид | Рабочий |
+| `MultiSourceAdapter` | Координация нескольких источников | Рабочий |
+
+**Интерфейс `SourceAdapter` (base.py):**
+- `search(query: SearchQuery) -> List[Vacancy]`
+- `fetch_details(vacancy: Vacancy) -> Vacancy`
+- `load_fixture(path: Path) -> List[Vacancy]`
+- `get_source_status() -> Dict`
+
+### Core Models (`src/vacancies/core/models.py`)
+- `CandidateProfile` — профиль кандидата (junior, 119k net, remote/hybrid SPb, dms_mode)
+- `Vacancy` — полная модель вакансии с evidence, анализами, скором, статусом
+- `SalaryInfo` — from/to, currency, tax_type (NET/GROSS/UNKNOWN), period
+- `BenefitsInfo` — dms_status (CONFIRMED/NOT_MENTIONED/UNKNOWN)
+- `TechnicalAnalysis` / `CareerFitAnalysis` — результаты LLM/эвристик
+- `VacancyScore` — 5 компонентов + total + weights + explanation
+
+### Scoring (`src/vacancies/core/scoring.py`)
+- **Взвешенная сумма** 5 компонентов (настраивается в `config/scoring.yaml`)
+- **Зарплата**: конвертация в месячный net RUB (нет hardcoded курсов), gross/unknown не проходят net-порог автоматически
+- **Формат**: remote=100, hybrid=80, office=30, unknown=50
+- **ДМС**: confirmed=100, not_mentioned=40, unknown=50
+- **Технический**: от LLM или эвристик (Go signals, backend signals)
+- **Карьерный**: от LLM или эвристик (seniority indicators)
+
+### Storage (`src/vacancies/storage/`)
+- `RunHistory` — сохранение запусков в `history/runs/`, индекс в `index.json`
+- `NewVacancyDetector` — сравнение с предыдущим запуском (до 30 дней), детекция new/changed/removed
+
+### Config (`src/vacancies/utils/config.py`)
+- `ConfigLoader` — загрузка YAML с поддержкой legacy flat и нового nested формата
+- ENV overrides: `VACANCIES_LLM_PROVIDER`, `VACANCIES_DISABLE_LLM`
+
+### LLM (`src/vacancies/llm/`)
+- `BaseLLMClient` — интерфейс + `generate_json()` с извлечением JSON
+- `OllamaClient` — локальный Ollama (retries, timeout)
+- `MockLLMClient` — детерминированный для тестов
+- `build_llm_client()` — фабрика
+
+### Prompts (`src/vacancies/llm/prompts.py`)
+- `SECURITY_PREAMBLE` — защита от prompt injection
+- Системные промпты: INTAKE, TECHNICAL, CAREER_FIT, REPORT
+- Builders: `build_technical_prompt`, `build_career_fit_prompt`, etc.
+
+## Поток данных
 ```
-src/vacancies/
-├── core/
-│   ├── models.py        # CandidateProfile, Vacancy, SalaryInfo, BenefitsInfo, ...
-│   ├── contracts.py     # AgentResult, ResearchRun, VacancyReport
-│   ├── enums.py         # Currency, DmsStatus, TaxType, WorkFormat, VacancyStatus, ...
-│   └── scoring.py       # VacancyNormalizer, ScoringCalculator (детерминированный)
-├── go_agents/
-│   ├── agents.py        # CareerIntakeAgent, VacancyDiscoveryAgent
-│   └── specialists.py   # Verification, Technical, Compensation, CareerFit, Dedup, QA
-├── llm/
-│   ├── client.py        # LLMConfig, OllamaClient, MockLLMClient, build_llm_client
-│   └── prompts.py       # системные промпты + security preamble
-├── adapters/
-│   ├── hh_adapter.py    # HHAdapter: fixture + live scraping
-│   └── hh_scraper.py    # HHWebScraper: curl_cffi TLS fingerprint
-├── orchestrator/
-│   └── orchestrator.py  # VacancyResearchOrchestrator + OrchestratorLimits
-├── reporting/
-│   └── writers.py       # VacancyReportWriter + ReportWriterAgent (LLM)
-├── utils/
-│   ├── config.py        # ConfigLoader (candidate.yaml, scoring.yaml, llm.yaml)
-│   └── sanitize.py      # prompt-injection detection & neutralization
-└── storage/             # зарезервировано под историю запусков
+raw_query → CareerIntakeAgent → CandidateProfile
+    ↓
+VacancyDiscoveryAgent (MultiSourceAdapter) → List[Vacancy]
+    ↓
+Sanitize (prompt injection defense)
+    ↓
+VacancyVerificationAgent → checked_at, evidence, completeness
+    ↓
+Parallel: GoTechnicalAnalyst, CompensationBenefitsAgent, CareerFitAnalyst
+    ↓
+DeduplicationRankingAgent → canonical_url, cross-source fuzzy, score, status
+    ↓
+VacancyReport (summary, best/needs/not groups)
+    ↓
+LLM ReportWriter (опционально)
+    ↓
+QA (loop max 2 iter) → fix if needed
+    ↓
+RunHistory.save_run() + NewVacancyDetector.detect()
+    ↓
+Reports: latest.md/.json + runs/<run_id>.* + history/runs/
 ```
 
-## LLM-слой
-
-Локальная модель подключается через Ollama (`config/llm.yaml`). Абстракция
-`BaseLLMClient` даёт две реализации:
-
-- **`OllamaClient`** — реальный вызов локального сервера (`/api/generate`),
-  с retry, таймаутом и ограничением длины вывода.
-- **`MockLLMClient`** — детерминированный ответ для тестов и offline-режима.
-
-Ключевые принципы:
-
-1. **LLM ≠ источник истины.** Рейтинг, дедупликация и обязательные критерии
-   считает детерминированный код; LLM только интерпретирует текст.
-2. **Graceful degradation.** При недоступности LLM каждый агент переходит на
-   эвристики — пайплайн не падает.
-3. **Строгая схема вывода.** Агенты ожидают JSON-объект; клиент извлекает его
-   даже из markdown-обёртки, при неудаче — fallback.
-4. **Безопасность.** Текст вакансии нейтрализуется (prompt injection), системные
-   промпты содержат явный запрет следовать инструкциям из данных.
-
-## Поток данных (пайплайн)
-
-```
-Запрос пользователя
-        │
-        ▼
-[1] Career Intake Agent ──► CandidateProfile (валидированный)
-        │
-        ▼
-[2] Vacancy Discovery Agent ──► List[Vacancy]  (hh.ru / fixture)
-        │
-        ▼
-[3] Sanitize (prompt injection guard)
-        │
-        ▼
-[4] Vacancy Verification Agent ──► подтверждённые факты + data_completeness
-        │
-        ▼
-[5] Анализ (параллельно, ThreadPoolExecutor):
-        ├── Go Technical Analyst      ──► TechnicalAnalysis
-        ├── Compensation & Benefits   ──► SalaryInfo/BenefitsInfo
-        └── Career Fit Analyst        ──► CareerFitAnalysis
-        │
-        ▼
-[6] Deduplication & Ranking Agent ──► дедуп + VacancyScore + статус
-        │
-        ▼
-[7] Report Writer ──► reports/latest.md + reports/latest.json
-        │
-        ▼
-[8] Quality Assurance Agent ──► ограниченный цикл исправления (max_qa_iterations)
-```
-
-## Модель рейтинга (детерминированная)
-
-| Критерий             | Вес  |
-|----------------------|------|
-| Соответствие зарплате| 0.25 |
-| Формат и география   | 0.25 |
-| Подтверждённость ДМС | 0.15 |
-| Интересность задач   | 0.25 |
-| Карьерный потенциал  | 0.10 |
-
-Веса загружаются из `config/scoring.yaml` (не зашиты в код). Каждая
-составляющая оценивается 0–100, итог — взвешенная сумма.
-
-## Обязательные критерии vs рейтинг
-
-Обязательное несоответствие (например, зарплата ниже порога 119 000 руб/мес)
-присваивает статус `not_suitable` независимо от рейтинга. Недостаток данных
-приводит к `needs_clarification`, а не к исключению вакансии.
-
-## Источники данных
-
-- **hh.ru public scraping** — через `HHWebScraper` (curl_cffi, Chrome TLS
-  fingerprint). Без API-токена. Соблюдаются задержки между запросами.
-- **Fixture-файлы** — статические JSON для тестов и работы без сети.
-- API-интеграции — зарезервированы за интерфейсом адаптера.
-
-## Хранение истории
-
-- `reports/latest.md` / `reports/latest.json` — последний отчёт.
-- `reports/runs/<run_id>.md` / `.json` — история запусков.
-
-## Конфигурация
-
-- `config/candidate.yaml` — профиль кандидата (профессия, география, порог
-  зарплаты, ДМС, язык).
-- `config/scoring.yaml` — веса рейтинга.
-- `.env` — секреты (не коммитится); `.env.example` — шаблон.
+## Безопасность
+- Секреты только в env (`.env.example` шаблон)
+- Текст вакансий = untrusted input → санитизация перед LLM
+- Системные промпты содержат `SECURITY_PREAMBLE`
+- Нет авто-откликов, нет публикации личных данных
+- Rate limits, timeouts, retry bounds на каждом сетевом этапе

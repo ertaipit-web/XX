@@ -10,6 +10,9 @@ from ..core.enums import Currency, WorkFormat
 from ..core.models import CandidateProfile, SearchQuery, Vacancy
 from ..llm.client import BaseLLMClient
 from ..llm.prompts import INTAKE_SYSTEM, build_intake_prompt
+from ..adapters.multi_source import MultiSourceAdapter
+from ..adapters.hh_adapter import HHAdapter
+from ..adapters.base import SourceAdapter
 
 logger = logging.getLogger(__name__)
 
@@ -24,22 +27,12 @@ class AgentBase:
 
 @dataclass
 class CareerIntakeAgent(AgentBase):
-    """Parses a raw text query and extracts candidate profile criteria.
-
-    Uses an optional LLM client for free-text parsing; falls back to
-    deterministic heuristics when the LLM is unavailable or returns garbage.
-    """
+    """Parses a raw text query and extracts candidate profile criteria."""
 
     name: str = "Career Intake Agent"
     llm: Optional[BaseLLMClient] = None
 
     def run(self, raw_query: str | None = None, profile: CandidateProfile | None = None) -> Dict[str, Any]:
-        """Parse raw query string and merge with existing profile.
-
-        Returns:
-            Dict with 'profile' (CandidateProfile), 'messages' (list[str]),
-            'contradictions' (list[str]), 'missing_data' (list[str]).
-        """
         if profile is None:
             profile = CandidateProfile()
 
@@ -56,7 +49,6 @@ class CareerIntakeAgent(AgentBase):
                 "missing_data": missing_data,
             }
 
-        # --- LLM path -------------------------------------------------
         if self.llm is not None:
             parsed = self._parse_with_llm(raw_query)
             if parsed:
@@ -69,7 +61,6 @@ class CareerIntakeAgent(AgentBase):
                 }
             messages.append("LLM parsing unavailable, using heuristic fallback")
 
-        # --- Heuristic fallback ---------------------------------------
         return self._parse_with_heuristics(raw_query, profile, messages, contradictions, missing_data)
 
     def _parse_with_llm(self, raw_query: str) -> Optional[Dict[str, Any]]:
@@ -80,7 +71,7 @@ class CareerIntakeAgent(AgentBase):
             return client.generate_json(
                 build_intake_prompt(raw_query), system=INTAKE_SYSTEM
             )
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             logger.warning("LLM intake failed: %s", e)
             return None
 
@@ -122,9 +113,7 @@ class CareerIntakeAgent(AgentBase):
 
         profile.contradictions = contradictions
         profile.missing_data = missing_data
-        messages.append(
-            f"Профиль разобран LLM: {profile.profession}, {', '.join(profile.locations)}"
-        )
+        messages.append(f"Профиль разобран LLM: {profile.profession}, {', '.join(profile.locations)}")
 
     def _parse_with_heuristics(
         self,
@@ -136,26 +125,21 @@ class CareerIntakeAgent(AgentBase):
     ) -> Dict[str, Any]:
         query_lower = raw_query.lower()
 
-        # Extract profession (default: Go-разработчик)
         profession = profile.profession
         if "go" in query_lower or "golang" in query_lower:
             profession = "Go-разработчик"
         elif "python" in query_lower and "go" not in query_lower:
             profession = "Python-разработчик"
 
-        # Extract location hints
         locations = list(profile.locations)
         if "москв" in query_lower:
             if "Санкт-Петербург" in locations and "Москва" not in locations:
-                contradictions.append(
-                    "Запрос содержит 'Москва', но профиль кандидата указывает 'Санкт-Петербург'"
-                )
+                contradictions.append("Запрос содержит 'Москва', но профиль кандидата указывает 'Санкт-Петербург'")
             locations.append("Москва")
         if "удаленно" in query_lower or "remote" in query_lower:
             if "Удалённая работа" not in locations:
                 locations.append("Удалённая работа")
 
-        # Extract salary hints
         min_salary = profile.min_salary_rub_month
         salary_match = __import__("re").search(r"(\d+)\s*(тыс\.?)?\s*(руб\.?)?", raw_query)
         if salary_match:
@@ -166,7 +150,6 @@ class CareerIntakeAgent(AgentBase):
                 min_salary = suggested
                 messages.append(f"Из запроса извлечена зарплата: {int(suggested)} руб/мес")
 
-        # Build updated profile
         profile.profession = profession
         profile.locations = locations
         profile.min_salary_rub_month = min_salary
@@ -184,12 +167,10 @@ class CareerIntakeAgent(AgentBase):
 
 @dataclass
 class VacancyDiscoveryAgent(AgentBase):
-    """Discovers vacancies from configured sources.
+    """Discovers vacancies from multiple configured sources.
 
-    Supports:
-    - hh.ru public scraping (curl_cffi TLS fingerprint)
-    - Fixture files for testing
-    - Placeholder for future API integrations
+    Uses the MultiSourceAdapter to coordinate across multiple sources.
+    Falls back to fixtures for testing.
     """
 
     name: str = "Vacancy Discovery Agent"
@@ -197,56 +178,61 @@ class VacancyDiscoveryAgent(AgentBase):
     def run(
         self,
         query: SearchQuery,
-        source: str = "test",
-        hh_adapter: Any = None,
+        source: str = "multi",
+        hh_adapter: Optional[HHAdapter] = None,
         fixture_path: str | Path | None = None,
+        multi_adapter: Optional[Any] = None,
     ) -> Dict[str, Any]:
-        """Discover vacancies from the specified source.
+        """Discover vacancies from configured sources.
 
         Args:
             query: SearchQuery with text, areas, formats, etc.
-            source: Source name ('hh', 'fixture', 'test').
-            hh_adapter: Optional HHAdapter instance for hh.ru scraping.
+            source: Source mode ('multi', 'hh', 'fixture', 'test').
+            hh_adapter: Optional HHAdapter instance.
             fixture_path: Optional path to fixture JSON file.
+            multi_adapter: Optional MultiSourceAdapter for multi-source search.
 
         Returns:
             Dict with 'vacancies' (list[Vacancy]), 'source' (str),
-            'limitations' (list[str]).
+            'limitations' (list[str]), 'source_results' (dict).
         """
         vacancies: List[Vacancy] = []
         limitations: List[str] = []
+        source_results: Dict[str, List[Vacancy]] = {}
 
-        if source == "hh" and hh_adapter is not None:
-            # Scrape from hh.ru
+        if source == "multi" and multi_adapter is not None:
+            # Search all configured sources
             try:
-                vacancies = hh_adapter.scrape(
-                    text=query.text,
-                    area_id="2",  # Default: Saint Petersburg
-                    max_pages=query.max_pages,
-                    per_page=query.page_size,
-                    enrich=True,
-                    enrich_limit=30,
-                )
-                limitations.append("hh.ru public scraping may miss some vacancies behind login")
-                limitations.append("Rate limits apply: ~8-10 seconds between requests")
+                source_results = multi_adapter.search_all(query)
+                for name, results in source_results.items():
+                    vacancies.extend(results)
+                limitations.append(f"Multi-source search: {len(source_results)} sources queried")
             except Exception as e:
-                limitations.append(f"hh.ru scraping failed: {e}")
-                limitations.append("Switching to fixture-based mode")
+                limitations.append(f"Multi-source search failed: {e}")
+
+        elif source == "hh" and hh_adapter is not None:
+            try:
+                vacancies = hh_adapter.search(query)
+                source_results["hh.ru"] = vacancies
+                limitations.append("hh.ru API: requires valid HH_ACCESS_TOKEN")
+            except Exception as e:
+                limitations.append(f"hh.ru API search failed: {e}")
 
         elif source == "fixture" and fixture_path is not None:
-            # Load from fixture file
-            if hh_adapter is not None:
-                vacancies = hh_adapter.from_fixture(Path(fixture_path))
+            adapter = hh_adapter or HHAdapter()
+            vacancies = adapter.load_fixture(Path(fixture_path))
+            source_results["fixture"] = vacancies
             limitations.append("Fixture-based mode: results are static test data")
 
         else:
-            # Test mode: return empty list (integrator should provide fixtures)
             limitations.append("No real data source configured; returning empty list")
-            limitations.append("Use source='hh' with hh_adapter for live scraping")
+            limitations.append("Use source='multi' with multi_adapter for live multi-source search")
+            limitations.append("Use source='hh' with hh_adapter for hh.ru API")
             limitations.append("Use source='fixture' with fixture_path for test data")
 
         return {
             "vacancies": vacancies,
             "source": source,
             "limitations": limitations,
+            "source_results": source_results,
         }
