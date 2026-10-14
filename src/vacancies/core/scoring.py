@@ -262,3 +262,79 @@ class ScoringCalculator:
         elif any(s in title for s in ["junior", "стаж", "trainee"]):
             return 40
         return 50
+
+    @staticmethod
+    def _check_mandatory_salary(vacancy: Vacancy, min_salary: float) -> Optional[bool]:
+        """Check if vacancy meets mandatory salary requirement.
+        
+        Returns:
+            True  - confirmed salary >= min_salary net RUB/month
+            False - confirmed salary < min_salary (proven violation)
+            None  - unknown/unconfirmable (lack of data)
+        """
+        salary = vacancy.salary
+        if salary.from_amount is None and salary.to_amount is None:
+            return None  # Unknown - lack of data
+        
+        # For RUB currency, if amount is below threshold, we can prove violation
+        # regardless of tax_type (gross > net, so gross < threshold implies net < threshold)
+        if salary.currency == Currency.RUB:
+            lower_bound = salary.from_amount if salary.from_amount is not None else salary.to_amount
+            if lower_bound is not None and lower_bound < min_salary:
+                return False  # Proven violation: even gross is below threshold
+        
+        min_net = None
+        max_net = None
+        
+        if salary.from_amount is not None:
+            min_net = VacancyNormalizer.convert_to_monthly_net(
+                salary.from_amount, salary.currency, salary.tax_type, salary.period
+            )
+        if salary.to_amount is not None:
+            max_net = VacancyNormalizer.convert_to_monthly_net(
+                salary.to_amount, salary.currency, salary.tax_type, salary.period
+            )
+        
+        # If we couldn't convert to net RUB
+        if min_net is None and max_net is None:
+            return None  # Cannot confirm - lack of data
+        
+        upper = max_net if max_net is not None else min_net
+        
+        # If confirmed maximum is below threshold -> PROVEN VIOLATION
+        if upper is not None and upper < min_salary:
+            return False
+        
+        # If confirmed minimum meets threshold -> CONFIRMED PASS
+        lower = min_net if min_net is not None else max_net
+        if lower is not None and lower >= min_salary:
+            return True
+        
+        # Range crosses threshold or only upper bound known above threshold
+        return None  # Cannot confirm pass or fail - lack of data
+
+    @staticmethod
+    def _check_mandatory_format(vacancy: Vacancy) -> Optional[bool]:
+        """Check if vacancy meets mandatory format requirement.
+        
+        Returns:
+            True  - confirmed remote or hybrid in SPb
+            False - confirmed office or hybrid outside SPb (proven violation)
+            None  - unknown format or location (lack of data)
+        """
+        fmt = vacancy.work_format
+        if fmt == WorkFormat.REMOTE:
+            return True
+        if fmt == WorkFormat.HYBRID:
+            # For hybrid, need to check location is SPb
+            if vacancy.location:
+                loc = vacancy.location.lower()
+                if "санкт" in loc or "spb" in loc or "питер" in loc:
+                    return True
+                # Hybrid but location not SPb - proven violation
+                return False
+            # Hybrid but no location - lack of data
+            return None
+        if fmt == WorkFormat.OFFICE:
+            return False  # Proven violation
+        return None  # UNKNOWN - lack of data

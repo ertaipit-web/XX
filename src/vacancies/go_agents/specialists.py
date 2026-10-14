@@ -65,7 +65,7 @@ class VacancyVerificationAgent:
 
 
 class GoTechnicalAnalyst:
-    name = "GoTechnicalAnalyst"
+    name = "Go Technical Analyst"
     def __init__(self, llm=None) -> None:
         self.llm = llm
     def run(self, vacancies: List[Vacancy]) -> Dict[str, Any]:
@@ -176,16 +176,17 @@ class CompensationBenefitsAgent:
                     v.benefits.dms_status = DmsStatus.NOT_MENTIONED
 
             # Salary check - use proper conversion
-            net_monthly = VacancyNormalizer.convert_to_monthly_net(
-                v.salary.from_amount if v.salary.from_amount is not None else 0,
-                v.salary.currency,
-                v.salary.tax_type,
-                v.salary.period,
-            )
-            if net_monthly is not None and net_monthly < min_salary:
-                v.non_compliance_reasons.append(
-                    f"Зарплата ({v.salary.from_amount:.0f} {v.salary.currency.value}) ниже порога {min_salary:.0f} руб/мес"
+            if v.salary.from_amount is not None:
+                net_monthly = VacancyNormalizer.convert_to_monthly_net(
+                    v.salary.from_amount,
+                    v.salary.currency,
+                    v.salary.tax_type,
+                    v.salary.period,
                 )
+                if net_monthly is not None and net_monthly < min_salary:
+                    v.non_compliance_reasons.append(
+                        f"Зарплата ({v.salary.from_amount:.0f} {v.salary.currency.value}) ниже порога {min_salary:.0f} руб/мес"
+                    )
 
         return {"vacancies": vacancies, "success": True}
 
@@ -305,13 +306,27 @@ class DeduplicationRankingAgent:
         for v in unique:
             v.score = ScoringCalculator.calculate_score(v, weights, min_salary)
 
-            # If salary is in RUB and below threshold, treat as not suitable
-            if v.salary.from_amount is not None and v.salary.from_amount < min_salary:
+            # Check mandatory criteria BEFORE scoring-based status
+            salary_ok = ScoringCalculator._check_mandatory_salary(v, min_salary)
+            format_ok = ScoringCalculator._check_mandatory_format(v)
+            source_ok = bool(v.source_url)
+
+            # Mandatory criteria: False = proven violation, None = unknown/lack of data, True = confirmed pass
+            if salary_ok is False:
                 v.status = VacancyStatus.NOT_SUITABLE
-                if not any("ниже порога" in r for r in v.non_compliance_reasons):
-                    v.non_compliance_reasons.append(f'Зарплата ({v.salary.from_amount:.0f} руб) ниже порога {min_salary:.0f} руб/мес')
-            elif any("ниже порога" in r for r in v.non_compliance_reasons):
+                if not any("зарплат" in r.lower() for r in v.non_compliance_reasons):
+                    v.non_compliance_reasons.append("Зарплата не соответствует обязательному минимуму 119 000 ₽ net/мес")
+            elif format_ok is False:
                 v.status = VacancyStatus.NOT_SUITABLE
+                if not any("формат" in r.lower() for r in v.non_compliance_reasons):
+                    v.non_compliance_reasons.append("Формат работы не соответствует обязательным требованиям (remote/hybrid СПб)")
+            elif not source_ok:
+                v.status = VacancyStatus.CHECK_FAILED
+                if not any("источник" in r.lower() for r in v.non_compliance_reasons):
+                    v.non_compliance_reasons.append("Отсутствует проверяемый источник")
+            elif salary_ok is None or format_ok is None:
+                # Lack of data for mandatory criteria -> needs clarification
+                v.status = VacancyStatus.NEEDS_CLARIFICATION
             elif v.score.total >= 60:
                 v.status = VacancyStatus.SUITABLE
             else:

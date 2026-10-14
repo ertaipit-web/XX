@@ -95,8 +95,12 @@ class TestScenario02ProfileValidation:
         loader = ConfigLoader()
         profile = loader.load_candidate_profile()
         assert profile.min_salary_rub_month == 119000.0
-        assert profile.require_dms is True
+        assert profile.dms_mode == "prefer"
         assert WorkFormat.REMOTE in profile.work_formats
+        assert profile.candidate_level == "junior"
+        assert profile.experience_years is None
+        assert "Санкт-Петербург" in profile.locations[0]
+        assert "hybrid" in [w.value for w in profile.work_formats] or WorkFormat.HYBRID in profile.work_formats
 
     def test_config_loader_reads_scoring_weights(self):
         loader = ConfigLoader()
@@ -147,12 +151,18 @@ class TestScenario04UnknownTax:
 # 5. Проверка минимального порога зарплаты
 class TestScenario05MinSalary:
     def test_below_threshold_flagged(self):
-        v = _vacancy(salary=SalaryInfo(from_amount=90000, currency=Currency.RUB))
+        v = _vacancy(salary=SalaryInfo(from_amount=90000, currency=Currency.RUB, tax_type=TaxType.NET))
         CompensationBenefitsAgent().run([v], min_salary=119000)
         assert any("ниже порога" in r for r in v.non_compliance_reasons)
 
+    def test_below_threshold_unknown_tax_not_flagged(self):
+        """Unknown tax basis should not be auto-flagged as below threshold (conservative)."""
+        v = _vacancy(salary=SalaryInfo(from_amount=90000, currency=Currency.RUB, tax_type=TaxType.UNKNOWN))
+        CompensationBenefitsAgent().run([v], min_salary=119000)
+        assert not any("ниже порога" in r for r in v.non_compliance_reasons)
+
     def test_above_threshold_ok(self):
-        v = _vacancy(salary=SalaryInfo(from_amount=150000, currency=Currency.RUB))
+        v = _vacancy(salary=SalaryInfo(from_amount=150000, currency=Currency.RUB, tax_type=TaxType.NET))
         CompensationBenefitsAgent().run([v], min_salary=119000)
         assert not any("ниже порога" in r for r in v.non_compliance_reasons)
 
@@ -280,7 +290,7 @@ class TestScenario13SourceUnavailable:
     def test_discovery_failure_degrades_gracefully(self):
         agent = VacancyDiscoveryAgent()
         bad_adapter = MagicMock()
-        bad_adapter.scrape.side_effect = RuntimeError("network down")
+        bad_adapter.search.side_effect = RuntimeError("network down")
         res = agent.run(SearchQuery(text="go"), source="hh", hh_adapter=bad_adapter)
         assert res["vacancies"] == []
         assert any("failed" in lim for lim in res["limitations"])
@@ -390,7 +400,7 @@ class TestScenario18MandatoryCriteriaInReport:
         assert v.status == VacancyStatus.NOT_SUITABLE
 
     def test_report_separates_needs_clarification(self):
-        suitable = _vacancy(id="1", source_url="https://hh.ru/1")
+        suitable = _vacancy(id="1", source_url="https://hh.ru/1", salary=SalaryInfo(from_amount=150000, currency=Currency.RUB, tax_type=TaxType.NET))
         unclear = _vacancy(
             id="2",
             source_url="https://hh.ru/2",

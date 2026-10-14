@@ -195,6 +195,7 @@ class VacancyResearchOrchestrator:
                 lambda: self.discovery.run(
                     query=query,
                     source=source,
+                    hh_adapter=HHAdapter() if source == "hh" else None,
                     multi_adapter=self.multi_adapter,
                     fixture_path=fixture_path,
                 ),

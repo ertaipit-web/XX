@@ -1,0 +1,173 @@
+{
+  "run": {
+    "run_id": "e54a30da",
+    "started_at": "2026-10-14T15:00:39.204343+00:00",
+    "finished_at": "2026-10-14T15:00:39.207850+00:00",
+    "profile": {
+      "profession": "Go-разработчик",
+      "candidate_level": "junior",
+      "experience_years": null,
+      "locations": [
+        "Санкт-Петербург",
+        "Удалённая работа (Россия)",
+        "Удалённая работа"
+      ],
+      "work_formats": [
+        "remote",
+        "hybrid"
+      ],
+      "min_salary_rub_month": 119000.0,
+      "min_salary_tax_basis": "net",
+      "min_salary_period": "month",
+      "min_salary_is_mandatory": true,
+      "dms_mode": "prefer",
+      "language": "ru",
+      "main_currency": "RUB",
+      "search_frequency": "daily",
+      "llm_provider": "ollama",
+      "cloud_fallback_enabled": false,
+      "additional_notes": null,
+      "contradictions": [],
+      "missing_data": []
+    },
+    "vacancies_found": 0,
+    "vacancies_checked": 0,
+    "vacancies_unique": 0,
+    "vacancies_suitable": 0,
+    "vacancies_needs_clarification": 0,
+    "errors": [],
+    "agent_results": [
+      {
+        "agent_name": "Career Intake Agent",
+        "success": true,
+        "messages": [
+          "attempt 1"
+        ],
+        "errors": [],
+        "data": {},
+        "processed_count": 0
+      },
+      {
+        "agent_name": "Vacancy Discovery Agent",
+        "success": true,
+        "messages": [
+          "attempt 1"
+        ],
+        "errors": [],
+        "data": {},
+        "processed_count": 0
+      },
+      {
+        "agent_name": "VacancyVerificationAgent",
+        "success": true,
+        "messages": [
+          "attempt 1"
+        ],
+        "errors": [],
+        "data": {},
+        "processed_count": 0
+      },
+      {
+        "agent_name": "Go Technical Analyst",
+        "success": true,
+        "messages": [
+          "attempt 1"
+        ],
+        "errors": [],
+        "data": {},
+        "processed_count": 0
+      },
+      {
+        "agent_name": "Compensation & Benefits Agent",
+        "success": true,
+        "messages": [
+          "attempt 1"
+        ],
+        "errors": [],
+        "data": {},
+        "processed_count": 0
+      },
+      {
+        "agent_name": "CareerFitAnalyst",
+        "success": true,
+        "messages": [
+          "attempt 1"
+        ],
+        "errors": [],
+        "data": {},
+        "processed_count": 0
+      },
+      {
+        "agent_name": "Deduplication & Ranking Agent",
+        "success": true,
+        "messages": [
+          "attempt 1"
+        ],
+        "errors": [],
+        "data": {},
+        "processed_count": 0
+      },
+      {
+        "agent_name": "Quality Assurance Agent (iter 1)",
+        "success": true,
+        "messages": [
+          "attempt 1"
+        ],
+        "errors": [],
+        "data": {},
+        "processed_count": 0
+      },
+      {
+        "agent_name": "Quality Assurance Agent (iter 2)",
+        "success": true,
+        "messages": [
+          "attempt 1"
+        ],
+        "errors": [],
+        "data": {},
+        "processed_count": 0
+      }
+    ],
+    "metadata": {
+      "limitations": [
+        "No real data source configured; returning empty list",
+        "Use source='multi' with multi_adapter for live multi-source search",
+        "Use source='hh' with hh_adapter for hh.ru API",
+        "Use source='fixture' with fixture_path for test data"
+      ],
+      "source_results": {},
+      "qa_issues": [
+        "Отчёт содержит 0 вакансий",
+        "Отчёт содержит 0 вакансий"
+      ]
+    }
+  },
+  "vacancies": [],
+  "best_vacancies": [],
+  "needs_clarification": [],
+  "not_suitable": [],
+  "recommendations": [],
+  "next_steps": [
+    "Откликнуться на вакансии из категории «Подходят» в первую очередь",
+    "Уточнить по вакансиям из категории «Требует уточнения» детали зарплаты и ДМС",
+    "Проверить статус вакансий при следующем запуске"
+  ],
+  "candidate_improvements": [
+    "Указать грейд и опыт (лет) для более точного скоринга",
+    "Уточнить приоритет: зарплата vs интересные задачи",
+    "Добавить предпочтения по стеку (GRPC, Kubernetes, Kafka и т.д.)"
+  ],
+  "to_recheck": [],
+  "summary": {
+    "run_id": "e54a30da",
+    "started_at": "2026-10-14T15:00:39.204343+00:00",
+    "finished_at": "2026-10-14T15:00:39.207850+00:00",
+    "vacancies_found": 0,
+    "vacancies_checked": 0,
+    "vacancies_unique": 0,
+    "suitable": 0,
+    "needs_clarification": 0,
+    "not_suitable": 0,
+    "errors": []
+  }
+}

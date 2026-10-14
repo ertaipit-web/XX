@@ -27,8 +27,32 @@ class HHAdapter(SourceAdapter):
     def source_name(self) -> str:
         return "hh.ru"
 
-    def __init__(self, access_token: Optional[str] = None) -> None:
+    def __init__(self, access_token: Optional[str] = None, scraper: Optional[Any] = None) -> None:
         self.access_token = access_token or os.environ.get("HH_ACCESS_TOKEN")
+        # Lazy scraper initialization
+        self._scraper = scraper
+        self._scraper_class = None
+
+    @property
+    def scraper(self):
+        """Backward compatibility: return the scraper instance."""
+        return self._get_scraper()
+
+    def _get_scraper(self):
+        """Lazy load scraper to avoid hard dependency on curl_cffi."""
+        if self._scraper is not None:
+            return self._scraper
+        if self._scraper_class is None:
+            try:
+                from .hh_scraper import HHWebScraper
+                self._scraper_class = HHWebScraper
+            except ImportError:
+                self._scraper_class = None
+                return None
+        if self._scraper_class:
+            self._scraper = self._scraper_class()
+            return self._scraper
+        return None
 
     def _make_headers(self) -> Dict[str, str]:
         headers = {"Accept": "application/json", "User-Agent": DEFAULT_USER_AGENT}
@@ -53,8 +77,8 @@ class HHAdapter(SourceAdapter):
     def search(self, query: "SearchQuery") -> List[Vacancy]:
         """Search vacancies via official hh.ru API."""
         if not self.access_token:
-            logger.warning("HH_ACCESS_TOKEN not set, falling back to public search")
-            return self._public_search(query)
+            logger.warning("HH_ACCESS_TOKEN not set, falling back to public scraping")
+            return self._public_scrape(query)
 
         from ..core.models import SearchQuery
         text = query.text or "go разработчик"
@@ -87,11 +111,27 @@ class HHAdapter(SourceAdapter):
 
         return vacancies
 
-    def _public_search(self, query: "SearchQuery") -> List[Vacancy]:
-        """Fallback: generate public search URLs for manual research."""
-        logger.info("Using public search mode (no API token)")
-        # This is a fallback - in real usage, you'd use the scraper
-        return []
+    def _public_scrape(self, query: "SearchQuery") -> List[Vacancy]:
+        """Fallback: use public scraper (requires curl_cffi)."""
+        scraper = self._get_scraper()
+        if scraper is None:
+            logger.warning("curl_cffi not available, cannot scrape hh.ru")
+            return []
+
+        text = query.text or "go разработчик"
+        area_id = query.areas[0] if query.areas else "2"
+        max_pages = query.max_pages or 1
+        per_page = query.page_size or 20
+
+        logger.info("Scraping hh.ru public pages for: %s", text)
+        # Use search_and_enrich to get detailed vacancy info (salary, format, etc.)
+        return scraper.search_and_enrich(
+            text=text,
+            area_id=area_id,
+            max_pages=max_pages,
+            per_page=per_page,
+            enrich_limit=min(per_page * max_pages, 30),
+        )
 
     def fetch_details(self, vacancy: Vacancy) -> Vacancy:
         """Fetch full vacancy details from hh.ru API."""
@@ -165,3 +205,8 @@ class HHAdapter(SourceAdapter):
             "available": self.access_token is not None,
             "limitations": ["Requires HH_ACCESS_TOKEN for full API access"] if not self.access_token else [],
         }
+
+    # Backward compatibility
+    def from_fixture(self, path: Path) -> List[Vacancy]:
+        """Backward compatibility alias for load_fixture."""
+        return self.load_fixture(path)

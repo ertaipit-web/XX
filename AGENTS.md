@@ -15,12 +15,17 @@
 - Модуль src/vacancies/: контракты, модели, скоринг, оркестратор, агенты, адаптеры, отчёты.
 - Конфиги: config/candidate.yaml, config/scoring.yaml.
 - Отчёты: reports/latest.md, reports/latest.json, reports/runs/.
+- **Отчёты задач (task02_report.md, task03_report.md и т.д.) хранятся в папке tasks/.**
 - Документация: docs/architecture.md, docs/agents.md, docs/operations.md.
 
 ## Тестирование
-`ash
+`bash
 python -m pytest tests/vacancies/ tests/test_hh_vacancies.py -v
 `
+
+## Окружение
+- `curl_cffi` установлен в `.venv` (версия 0.16.3) — для hh.ru public scraping
+- Зависимости: `pyyaml`, `requests`, `curl_cffi`, `beautifulsoup4`
 
 ## Ограничения
 - Не подменяй отсутствие данных отрицательным фактом.

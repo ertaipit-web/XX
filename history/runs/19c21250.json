@@ -1,0 +1,2621 @@
+{
+  "run_id": "19c21250",
+  "started_at": "2026-10-14T14:16:02.229304+00:00",
+  "finished_at": "2026-10-14T14:16:12.346008+00:00",
+  "vacancies_found": 20,
+  "vacancies_checked": 20,
+  "vacancies_unique": 20,
+  "vacancies_suitable": 0,
+  "vacancies_needs_clarification": 20,
+  "errors": [],
+  "agent_results": [
+    {
+      "agent_name": "Career Intake Agent",
+      "success": true,
+      "messages": [
+        "attempt 1"
+      ],
+      "errors": [],
+      "data": {},
+      "processed_count": 0
+    },
+    {
+      "agent_name": "Vacancy Discovery Agent",
+      "success": true,
+      "messages": [
+        "attempt 1"
+      ],
+      "errors": [],
+      "data": {},
+      "processed_count": 0
+    },
+    {
+      "agent_name": "VacancyVerificationAgent",
+      "success": true,
+      "messages": [
+        "attempt 1"
+      ],
+      "errors": [],
+      "data": {},
+      "processed_count": 0
+    },
+    {
+      "agent_name": "Deduplication & Ranking Agent",
+      "success": true,
+      "messages": [
+        "attempt 1"
+      ],
+      "errors": [],
+      "data": {},
+      "processed_count": 0
+    },
+    {
+      "agent_name": "Quality Assurance Agent (iter 1)",
+      "success": true,
+      "messages": [
+        "attempt 1"
+      ],
+      "errors": [],
+      "data": {},
+      "processed_count": 0
+    },
+    {
+      "agent_name": "Quality Assurance Agent (iter 2)",
+      "success": true,
+      "messages": [
+        "attempt 1"
+      ],
+      "errors": [],
+      "data": {},
+      "processed_count": 0
+    }
+  ],
+  "metadata": {
+    "limitations": [
+      "Multi-source search: 2 sources queried"
+    ],
+    "source_results": {
+      "hh.ru": [
+        {
+          "id": "137817001",
+          "title": "Go-разработчик (Middle/Senior)",
+          "employer": "Data Light",
+          "source_url": "https://hh.ru/vacancy/137817001?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "alternate_urls": [],
+          "canonical_url": "https://hh.ru/vacancy/137817001?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "source_name": "hh.ru (scraped)",
+          "published_at": null,
+          "checked_at": "2026-10-14T14:16:12.340810+00:00",
+          "location": "Санкт-Петербург",
+          "work_format": "remote",
+          "salary": {
+            "from_amount": null,
+            "to_amount": null,
+            "currency": "unknown",
+            "tax_type": "unknown",
+            "period": "month",
+            "raw_text": null,
+            "evidence": []
+          },
+          "benefits": {
+            "dms_status": "not_mentioned",
+            "dms_notes": null,
+            "other_benefits": [],
+            "evidence": []
+          },
+          "technology_stack": [],
+          "description": null,
+          "requirements": null,
+          "responsibilities": null,
+          "confirmed_facts": [
+            "Есть ссылка на первоисточник"
+          ],
+          "evidence": [
+            {
+              "source_url": "https://hh.ru/vacancy/137817001?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+              "snippet": null,
+              "field_name": "source_url",
+              "extracted_at": "2026-10-14T14:16:12.340816+00:00"
+            }
+          ],
+          "technical_analysis": {
+            "technologies": [
+              "Go"
+            ],
+            "go_relevance_score": 40,
+            "task_interest_score": 30,
+            "concurrency_signals": [],
+            "backend_signals": [],
+            "concerns": [],
+            "positives": [],
+            "has_confirmed_tech": true
+          },
+          "career_fit": {
+            "fit_score": 80,
+            "career_growth_score": 90,
+            "motivation_score": 80,
+            "strong_points": [
+              "Формат работы подходит: remote"
+            ],
+            "risks": [
+              "Зарплата не указана — требуется уточнение"
+            ],
+            "questions_for_interview": [
+              "Каков диапазон зарплат для этой позиции?",
+              "Есть ли ДМС и другие соц benefits?",
+              "Каков стек технологий и процессы разработки?"
+            ],
+            "recommendation": "Рекомендуется к рассмотрению"
+          },
+          "score": {
+            "salary_fit": 30,
+            "format_fit": 100,
+            "dms_fit": 40,
+            "technical_interest": 30,
+            "career_potential": 80,
+            "total": 54,
+            "weights": {
+              "salary_fit": 0.25,
+              "format_fit": 0.25,
+              "dms_fit": 0.15,
+              "technical_interest": 0.25,
+              "career_potential": 0.1
+            },
+            "explanation": [
+              "Низкое соответствие зарплатному ожиданию",
+              "ДМС не подтверждён или не указан",
+              "Технические задачи могут быть рутинными"
+            ]
+          },
+          "status": "needs_clarification",
+          "non_compliance_reasons": [],
+          "data_completeness": 1,
+          "llm_summary": null,
+          "llm_why_fits": null,
+          "llm_unknowns": [],
+          "llm_what_to_ask": []
+        },
+        {
+          "id": "138445493",
+          "title": "Golang-разработчик",
+          "employer": "ОООРед Софт",
+          "source_url": "https://hh.ru/vacancy/138445493?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "alternate_urls": [],
+          "canonical_url": "https://hh.ru/vacancy/138445493?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "source_name": "hh.ru (scraped)",
+          "published_at": null,
+          "checked_at": "2026-10-14T14:16:12.340828+00:00",
+          "location": "Санкт-Петербург, р-н Московский",
+          "work_format": "unknown",
+          "salary": {
+            "from_amount": null,
+            "to_amount": null,
+            "currency": "unknown",
+            "tax_type": "unknown",
+            "period": "month",
+            "raw_text": null,
+            "evidence": []
+          },
+          "benefits": {
+            "dms_status": "not_mentioned",
+            "dms_notes": null,
+            "other_benefits": [],
+            "evidence": []
+          },
+          "technology_stack": [],
+          "description": null,
+          "requirements": null,
+          "responsibilities": null,
+          "confirmed_facts": [
+            "Есть ссылка на первоисточник"
+          ],
+          "evidence": [
+            {
+              "source_url": "https://hh.ru/vacancy/138445493?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+              "snippet": null,
+              "field_name": "source_url",
+              "extracted_at": "2026-10-14T14:16:12.340831+00:00"
+            }
+          ],
+          "technical_analysis": {
+            "technologies": [
+              "Go"
+            ],
+            "go_relevance_score": 60,
+            "task_interest_score": 30,
+            "concurrency_signals": [],
+            "backend_signals": [],
+            "concerns": [],
+            "positives": [
+              "Go активно используется в задачах"
+            ],
+            "has_confirmed_tech": true
+          },
+          "career_fit": {
+            "fit_score": 55,
+            "career_growth_score": 65,
+            "motivation_score": 55,
+            "strong_points": [
+              "Go активно используется в задачах"
+            ],
+            "risks": [
+              "Офисный формат может не соответствовать ожиданиям",
+              "Зарплата не указана — требуется уточнение"
+            ],
+            "questions_for_interview": [
+              "Каков диапазон зарплат для этой позиции?",
+              "Есть ли ДМС и другие соц benefits?",
+              "Каков стек технологий и процессы разработки?"
+            ],
+            "recommendation": "Требует уточнения"
+          },
+          "score": {
+            "salary_fit": 30,
+            "format_fit": 50,
+            "dms_fit": 40,
+            "technical_interest": 30,
+            "career_potential": 55,
+            "total": 39,
+            "weights": {
+              "salary_fit": 0.25,
+              "format_fit": 0.25,
+              "dms_fit": 0.15,
+              "technical_interest": 0.25,
+              "career_potential": 0.1
+            },
+            "explanation": [
+              "Низкое соответствие зарплатному ожиданию",
+              "ДМС не подтверждён или не указан",
+              "Технические задачи могут быть рутинными"
+            ]
+          },
+          "status": "needs_clarification",
+          "non_compliance_reasons": [],
+          "data_completeness": 1,
+          "llm_summary": null,
+          "llm_why_fits": null,
+          "llm_unknowns": [],
+          "llm_what_to_ask": []
+        },
+        {
+          "id": "137107180",
+          "title": "Go/Python разработчик",
+          "employer": "GS Labs",
+          "source_url": "https://hh.ru/vacancy/137107180?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "alternate_urls": [],
+          "canonical_url": "https://hh.ru/vacancy/137107180?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "source_name": "hh.ru (scraped)",
+          "published_at": null,
+          "checked_at": "2026-10-14T14:16:12.340836+00:00",
+          "location": "Санкт-Петербург",
+          "work_format": "unknown",
+          "salary": {
+            "from_amount": null,
+            "to_amount": null,
+            "currency": "unknown",
+            "tax_type": "unknown",
+            "period": "month",
+            "raw_text": null,
+            "evidence": []
+          },
+          "benefits": {
+            "dms_status": "not_mentioned",
+            "dms_notes": null,
+            "other_benefits": [],
+            "evidence": []
+          },
+          "technology_stack": [],
+          "description": null,
+          "requirements": null,
+          "responsibilities": null,
+          "confirmed_facts": [
+            "Есть ссылка на первоисточник"
+          ],
+          "evidence": [
+            {
+              "source_url": "https://hh.ru/vacancy/137107180?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+              "snippet": null,
+              "field_name": "source_url",
+              "extracted_at": "2026-10-14T14:16:12.340837+00:00"
+            }
+          ],
+          "technical_analysis": {
+            "technologies": [
+              "Go"
+            ],
+            "go_relevance_score": 40,
+            "task_interest_score": 30,
+            "concurrency_signals": [],
+            "backend_signals": [],
+            "concerns": [],
+            "positives": [],
+            "has_confirmed_tech": true
+          },
+          "career_fit": {
+            "fit_score": 55,
+            "career_growth_score": 65,
+            "motivation_score": 55,
+            "strong_points": [],
+            "risks": [
+              "Офисный формат может не соответствовать ожиданиям",
+              "Зарплата не указана — требуется уточнение"
+            ],
+            "questions_for_interview": [
+              "Каков диапазон зарплат для этой позиции?",
+              "Есть ли ДМС и другие соц benefits?",
+              "Каков стек технологий и процессы разработки?"
+            ],
+            "recommendation": "Требует уточнения"
+          },
+          "score": {
+            "salary_fit": 30,
+            "format_fit": 50,
+            "dms_fit": 40,
+            "technical_interest": 30,
+            "career_potential": 55,
+            "total": 39,
+            "weights": {
+              "salary_fit": 0.25,
+              "format_fit": 0.25,
+              "dms_fit": 0.15,
+              "technical_interest": 0.25,
+              "career_potential": 0.1
+            },
+            "explanation": [
+              "Низкое соответствие зарплатному ожиданию",
+              "ДМС не подтверждён или не указан",
+              "Технические задачи могут быть рутинными"
+            ]
+          },
+          "status": "needs_clarification",
+          "non_compliance_reasons": [],
+          "data_completeness": 1,
+          "llm_summary": null,
+          "llm_why_fits": null,
+          "llm_unknowns": [],
+          "llm_what_to_ask": []
+        },
+        {
+          "id": "138381728",
+          "title": "Senior Golang разработчик",
+          "employer": "SearchInform",
+          "source_url": "https://hh.ru/vacancy/138381728?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "alternate_urls": [],
+          "canonical_url": "https://hh.ru/vacancy/138381728?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "source_name": "hh.ru (scraped)",
+          "published_at": null,
+          "checked_at": "2026-10-14T14:16:12.340840+00:00",
+          "location": "Санкт-Петербург",
+          "work_format": "unknown",
+          "salary": {
+            "from_amount": null,
+            "to_amount": null,
+            "currency": "unknown",
+            "tax_type": "unknown",
+            "period": "month",
+            "raw_text": null,
+            "evidence": []
+          },
+          "benefits": {
+            "dms_status": "not_mentioned",
+            "dms_notes": null,
+            "other_benefits": [],
+            "evidence": []
+          },
+          "technology_stack": [],
+          "description": null,
+          "requirements": null,
+          "responsibilities": null,
+          "confirmed_facts": [
+            "Есть ссылка на первоисточник"
+          ],
+          "evidence": [
+            {
+              "source_url": "https://hh.ru/vacancy/138381728?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+              "snippet": null,
+              "field_name": "source_url",
+              "extracted_at": "2026-10-14T14:16:12.340841+00:00"
+            }
+          ],
+          "technical_analysis": {
+            "technologies": [
+              "Go"
+            ],
+            "go_relevance_score": 60,
+            "task_interest_score": 30,
+            "concurrency_signals": [],
+            "backend_signals": [],
+            "concerns": [],
+            "positives": [
+              "Go активно используется в задачах"
+            ],
+            "has_confirmed_tech": true
+          },
+          "career_fit": {
+            "fit_score": 80,
+            "career_growth_score": 90,
+            "motivation_score": 80,
+            "strong_points": [
+              "Go активно используется в задачах"
+            ],
+            "risks": [
+              "Офисный формат может не соответствовать ожиданиям",
+              "Зарплата не указана — требуется уточнение"
+            ],
+            "questions_for_interview": [
+              "Каков диапазон зарплат для этой позиции?",
+              "Есть ли ДМС и другие соц benefits?",
+              "Каков стек технологий и процессы разработки?"
+            ],
+            "recommendation": "Рекомендуется к рассмотрению"
+          },
+          "score": {
+            "salary_fit": 30,
+            "format_fit": 50,
+            "dms_fit": 40,
+            "technical_interest": 30,
+            "career_potential": 80,
+            "total": 41,
+            "weights": {
+              "salary_fit": 0.25,
+              "format_fit": 0.25,
+              "dms_fit": 0.15,
+              "technical_interest": 0.25,
+              "career_potential": 0.1
+            },
+            "explanation": [
+              "Низкое соответствие зарплатному ожиданию",
+              "ДМС не подтверждён или не указан",
+              "Технические задачи могут быть рутинными"
+            ]
+          },
+          "status": "needs_clarification",
+          "non_compliance_reasons": [],
+          "data_completeness": 1,
+          "llm_summary": null,
+          "llm_why_fits": null,
+          "llm_unknowns": [],
+          "llm_what_to_ask": []
+        },
+        {
+          "id": "137453601",
+          "title": "Senior Programmatic AdTech Engineer / Fullstack разработчик (офис, Санкт-Петербург)",
+          "employer": "Дартс рекрутинг сервисез",
+          "source_url": "https://hh.ru/vacancy/137453601?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "alternate_urls": [],
+          "canonical_url": "https://hh.ru/vacancy/137453601?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "source_name": "hh.ru (scraped)",
+          "published_at": null,
+          "checked_at": "2026-10-14T14:16:12.340844+00:00",
+          "location": "Санкт-Петербург",
+          "work_format": "unknown",
+          "salary": {
+            "from_amount": null,
+            "to_amount": null,
+            "currency": "unknown",
+            "tax_type": "unknown",
+            "period": "month",
+            "raw_text": null,
+            "evidence": []
+          },
+          "benefits": {
+            "dms_status": "not_mentioned",
+            "dms_notes": null,
+            "other_benefits": [],
+            "evidence": []
+          },
+          "technology_stack": [],
+          "description": null,
+          "requirements": null,
+          "responsibilities": null,
+          "confirmed_facts": [
+            "Есть ссылка на первоисточник"
+          ],
+          "evidence": [
+            {
+              "source_url": "https://hh.ru/vacancy/137453601?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+              "snippet": null,
+              "field_name": "source_url",
+              "extracted_at": "2026-10-14T14:16:12.340845+00:00"
+            }
+          ],
+          "technical_analysis": {
+            "technologies": [],
+            "go_relevance_score": 20,
+            "task_interest_score": 30,
+            "concurrency_signals": [],
+            "backend_signals": [],
+            "concerns": [
+              "Go не упоминается в описании"
+            ],
+            "positives": [],
+            "has_confirmed_tech": false
+          },
+          "career_fit": {
+            "fit_score": 80,
+            "career_growth_score": 90,
+            "motivation_score": 80,
+            "strong_points": [],
+            "risks": [
+              "Офисный формат может не соответствовать ожиданиям",
+              "Зарплата не указана — требуется уточнение",
+              "Go не упоминается в описании"
+            ],
+            "questions_for_interview": [
+              "Каков диапазон зарплат для этой позиции?",
+              "Есть ли ДМС и другие соц benefits?",
+              "Каков стек технологий и процессы разработки?"
+            ],
+            "recommendation": "Рекомендуется к рассмотрению"
+          },
+          "score": {
+            "salary_fit": 30,
+            "format_fit": 50,
+            "dms_fit": 40,
+            "technical_interest": 30,
+            "career_potential": 80,
+            "total": 41,
+            "weights": {
+              "salary_fit": 0.25,
+              "format_fit": 0.25,
+              "dms_fit": 0.15,
+              "technical_interest": 0.25,
+              "career_potential": 0.1
+            },
+            "explanation": [
+              "Низкое соответствие зарплатному ожиданию",
+              "ДМС не подтверждён или не указан",
+              "Технические задачи могут быть рутинными"
+            ]
+          },
+          "status": "needs_clarification",
+          "non_compliance_reasons": [],
+          "data_completeness": 1,
+          "llm_summary": null,
+          "llm_why_fits": null,
+          "llm_unknowns": [],
+          "llm_what_to_ask": []
+        },
+        {
+          "id": "138354826",
+          "title": "Senior Backend Developer/Ведущий разработчик (Go)",
+          "employer": "bnovo",
+          "source_url": "https://hh.ru/vacancy/138354826?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "alternate_urls": [],
+          "canonical_url": "https://hh.ru/vacancy/138354826?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "source_name": "hh.ru (scraped)",
+          "published_at": null,
+          "checked_at": "2026-10-14T14:16:12.340849+00:00",
+          "location": "Санкт-Петербург, р-н Центральный",
+          "work_format": "remote",
+          "salary": {
+            "from_amount": null,
+            "to_amount": null,
+            "currency": "unknown",
+            "tax_type": "unknown",
+            "period": "month",
+            "raw_text": null,
+            "evidence": []
+          },
+          "benefits": {
+            "dms_status": "not_mentioned",
+            "dms_notes": null,
+            "other_benefits": [],
+            "evidence": []
+          },
+          "technology_stack": [],
+          "description": null,
+          "requirements": null,
+          "responsibilities": null,
+          "confirmed_facts": [
+            "Есть ссылка на первоисточник"
+          ],
+          "evidence": [
+            {
+              "source_url": "https://hh.ru/vacancy/138354826?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+              "snippet": null,
+              "field_name": "source_url",
+              "extracted_at": "2026-10-14T14:16:12.340850+00:00"
+            }
+          ],
+          "technical_analysis": {
+            "technologies": [
+              "Go"
+            ],
+            "go_relevance_score": 40,
+            "task_interest_score": 38,
+            "concurrency_signals": [],
+            "backend_signals": [
+              "backend"
+            ],
+            "concerns": [],
+            "positives": [],
+            "has_confirmed_tech": true
+          },
+          "career_fit": {
+            "fit_score": 80,
+            "career_growth_score": 90,
+            "motivation_score": 80,
+            "strong_points": [
+              "Формат работы подходит: remote"
+            ],
+            "risks": [
+              "Зарплата не указана — требуется уточнение"
+            ],
+            "questions_for_interview": [
+              "Каков диапазон зарплат для этой позиции?",
+              "Есть ли ДМС и другие соц benefits?",
+              "Каков стек технологий и процессы разработки?"
+            ],
+            "recommendation": "Рекомендуется к рассмотрению"
+          },
+          "score": {
+            "salary_fit": 30,
+            "format_fit": 100,
+            "dms_fit": 40,
+            "technical_interest": 38,
+            "career_potential": 80,
+            "total": 56,
+            "weights": {
+              "salary_fit": 0.25,
+              "format_fit": 0.25,
+              "dms_fit": 0.15,
+              "technical_interest": 0.25,
+              "career_potential": 0.1
+            },
+            "explanation": [
+              "Низкое соответствие зарплатному ожиданию",
+              "ДМС не подтверждён или не указан",
+              "Технические задачи могут быть рутинными"
+            ]
+          },
+          "status": "needs_clarification",
+          "non_compliance_reasons": [],
+          "data_completeness": 1,
+          "llm_summary": null,
+          "llm_why_fits": null,
+          "llm_unknowns": [],
+          "llm_what_to_ask": []
+        },
+        {
+          "id": "125428124",
+          "title": "Старший разработчик Go, Разработка систем оценки рисков",
+          "employer": "Ozon Банк",
+          "source_url": "https://hh.ru/vacancy/125428124?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "alternate_urls": [],
+          "canonical_url": "https://hh.ru/vacancy/125428124?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "source_name": "hh.ru (scraped)",
+          "published_at": null,
+          "checked_at": "2026-10-14T14:16:12.340852+00:00",
+          "location": "Санкт-Петербург",
+          "work_format": "remote",
+          "salary": {
+            "from_amount": null,
+            "to_amount": null,
+            "currency": "unknown",
+            "tax_type": "unknown",
+            "period": "month",
+            "raw_text": null,
+            "evidence": []
+          },
+          "benefits": {
+            "dms_status": "not_mentioned",
+            "dms_notes": null,
+            "other_benefits": [],
+            "evidence": []
+          },
+          "technology_stack": [],
+          "description": null,
+          "requirements": null,
+          "responsibilities": null,
+          "confirmed_facts": [
+            "Есть ссылка на первоисточник"
+          ],
+          "evidence": [
+            {
+              "source_url": "https://hh.ru/vacancy/125428124?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+              "snippet": null,
+              "field_name": "source_url",
+              "extracted_at": "2026-10-14T14:16:12.340853+00:00"
+            }
+          ],
+          "technical_analysis": {
+            "technologies": [
+              "Go"
+            ],
+            "go_relevance_score": 40,
+            "task_interest_score": 30,
+            "concurrency_signals": [],
+            "backend_signals": [],
+            "concerns": [],
+            "positives": [],
+            "has_confirmed_tech": true
+          },
+          "career_fit": {
+            "fit_score": 80,
+            "career_growth_score": 90,
+            "motivation_score": 80,
+            "strong_points": [
+              "Формат работы подходит: remote"
+            ],
+            "risks": [
+              "Зарплата не указана — требуется уточнение"
+            ],
+            "questions_for_interview": [
+              "Каков диапазон зарплат для этой позиции?",
+              "Есть ли ДМС и другие соц benefits?",
+              "Каков стек технологий и процессы разработки?"
+            ],
+            "recommendation": "Рекомендуется к рассмотрению"
+          },
+          "score": {
+            "salary_fit": 30,
+            "format_fit": 100,
+            "dms_fit": 40,
+            "technical_interest": 30,
+            "career_potential": 80,
+            "total": 54,
+            "weights": {
+              "salary_fit": 0.25,
+              "format_fit": 0.25,
+              "dms_fit": 0.15,
+              "technical_interest": 0.25,
+              "career_potential": 0.1
+            },
+            "explanation": [
+              "Низкое соответствие зарплатному ожиданию",
+              "ДМС не подтверждён или не указан",
+              "Технические задачи могут быть рутинными"
+            ]
+          },
+          "status": "needs_clarification",
+          "non_compliance_reasons": [],
+          "data_completeness": 1,
+          "llm_summary": null,
+          "llm_why_fits": null,
+          "llm_unknowns": [],
+          "llm_what_to_ask": []
+        },
+        {
+          "id": "137977897",
+          "title": "Backend (AI-native) разработчик",
+          "employer": "Сёрф",
+          "source_url": "https://hh.ru/vacancy/137977897?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "alternate_urls": [],
+          "canonical_url": "https://hh.ru/vacancy/137977897?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "source_name": "hh.ru (scraped)",
+          "published_at": null,
+          "checked_at": "2026-10-14T14:16:12.340855+00:00",
+          "location": "Санкт-Петербург",
+          "work_format": "remote",
+          "salary": {
+            "from_amount": null,
+            "to_amount": null,
+            "currency": "unknown",
+            "tax_type": "unknown",
+            "period": "month",
+            "raw_text": null,
+            "evidence": []
+          },
+          "benefits": {
+            "dms_status": "not_mentioned",
+            "dms_notes": null,
+            "other_benefits": [],
+            "evidence": []
+          },
+          "technology_stack": [],
+          "description": null,
+          "requirements": null,
+          "responsibilities": null,
+          "confirmed_facts": [
+            "Есть ссылка на первоисточник"
+          ],
+          "evidence": [
+            {
+              "source_url": "https://hh.ru/vacancy/137977897?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+              "snippet": null,
+              "field_name": "source_url",
+              "extracted_at": "2026-10-14T14:16:12.340856+00:00"
+            }
+          ],
+          "technical_analysis": {
+            "technologies": [],
+            "go_relevance_score": 20,
+            "task_interest_score": 38,
+            "concurrency_signals": [],
+            "backend_signals": [
+              "backend"
+            ],
+            "concerns": [
+              "Go не упоминается в описании"
+            ],
+            "positives": [],
+            "has_confirmed_tech": false
+          },
+          "career_fit": {
+            "fit_score": 55,
+            "career_growth_score": 65,
+            "motivation_score": 55,
+            "strong_points": [
+              "Формат работы подходит: remote"
+            ],
+            "risks": [
+              "Зарплата не указана — требуется уточнение",
+              "Go не упоминается в описании"
+            ],
+            "questions_for_interview": [
+              "Каков диапазон зарплат для этой позиции?",
+              "Есть ли ДМС и другие соц benefits?",
+              "Каков стек технологий и процессы разработки?"
+            ],
+            "recommendation": "Требует уточнения"
+          },
+          "score": {
+            "salary_fit": 30,
+            "format_fit": 100,
+            "dms_fit": 40,
+            "technical_interest": 38,
+            "career_potential": 55,
+            "total": 53,
+            "weights": {
+              "salary_fit": 0.25,
+              "format_fit": 0.25,
+              "dms_fit": 0.15,
+              "technical_interest": 0.25,
+              "career_potential": 0.1
+            },
+            "explanation": [
+              "Низкое соответствие зарплатному ожиданию",
+              "ДМС не подтверждён или не указан",
+              "Технические задачи могут быть рутинными"
+            ]
+          },
+          "status": "needs_clarification",
+          "non_compliance_reasons": [],
+          "data_completeness": 1,
+          "llm_summary": null,
+          "llm_why_fits": null,
+          "llm_unknowns": [],
+          "llm_what_to_ask": []
+        },
+        {
+          "id": "137532490",
+          "title": "Backend (AI-native) разработчик",
+          "employer": "Сёрф",
+          "source_url": "https://hh.ru/vacancy/137532490?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "alternate_urls": [],
+          "canonical_url": "https://hh.ru/vacancy/137532490?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "source_name": "hh.ru (scraped)",
+          "published_at": null,
+          "checked_at": "2026-10-14T14:16:12.340858+00:00",
+          "location": "Санкт-Петербург",
+          "work_format": "remote",
+          "salary": {
+            "from_amount": null,
+            "to_amount": null,
+            "currency": "unknown",
+            "tax_type": "unknown",
+            "period": "month",
+            "raw_text": null,
+            "evidence": []
+          },
+          "benefits": {
+            "dms_status": "not_mentioned",
+            "dms_notes": null,
+            "other_benefits": [],
+            "evidence": []
+          },
+          "technology_stack": [],
+          "description": null,
+          "requirements": null,
+          "responsibilities": null,
+          "confirmed_facts": [
+            "Есть ссылка на первоисточник"
+          ],
+          "evidence": [
+            {
+              "source_url": "https://hh.ru/vacancy/137532490?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+              "snippet": null,
+              "field_name": "source_url",
+              "extracted_at": "2026-10-14T14:16:12.340859+00:00"
+            }
+          ],
+          "technical_analysis": {
+            "technologies": [],
+            "go_relevance_score": 20,
+            "task_interest_score": 38,
+            "concurrency_signals": [],
+            "backend_signals": [
+              "backend"
+            ],
+            "concerns": [
+              "Go не упоминается в описании"
+            ],
+            "positives": [],
+            "has_confirmed_tech": false
+          },
+          "career_fit": {
+            "fit_score": 55,
+            "career_growth_score": 65,
+            "motivation_score": 55,
+            "strong_points": [
+              "Формат работы подходит: remote"
+            ],
+            "risks": [
+              "Зарплата не указана — требуется уточнение",
+              "Go не упоминается в описании"
+            ],
+            "questions_for_interview": [
+              "Каков диапазон зарплат для этой позиции?",
+              "Есть ли ДМС и другие соц benefits?",
+              "Каков стек технологий и процессы разработки?"
+            ],
+            "recommendation": "Требует уточнения"
+          },
+          "score": {
+            "salary_fit": 30,
+            "format_fit": 100,
+            "dms_fit": 40,
+            "technical_interest": 38,
+            "career_potential": 55,
+            "total": 53,
+            "weights": {
+              "salary_fit": 0.25,
+              "format_fit": 0.25,
+              "dms_fit": 0.15,
+              "technical_interest": 0.25,
+              "career_potential": 0.1
+            },
+            "explanation": [
+              "Низкое соответствие зарплатному ожиданию",
+              "ДМС не подтверждён или не указан",
+              "Технические задачи могут быть рутинными"
+            ]
+          },
+          "status": "needs_clarification",
+          "non_compliance_reasons": [],
+          "data_completeness": 1,
+          "llm_summary": null,
+          "llm_why_fits": null,
+          "llm_unknowns": [],
+          "llm_what_to_ask": []
+        },
+        {
+          "id": "127548662",
+          "title": "Senior/Middle+ Golang-разработчик (телеметрия, high-load)",
+          "employer": "ОООДатаджайл",
+          "source_url": "https://hh.ru/vacancy/127548662?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "alternate_urls": [],
+          "canonical_url": "https://hh.ru/vacancy/127548662?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "source_name": "hh.ru (scraped)",
+          "published_at": null,
+          "checked_at": "2026-10-14T14:16:12.340861+00:00",
+          "location": "Санкт-Петербург, р-н Кировский",
+          "work_format": "remote",
+          "salary": {
+            "from_amount": null,
+            "to_amount": null,
+            "currency": "unknown",
+            "tax_type": "unknown",
+            "period": "month",
+            "raw_text": null,
+            "evidence": []
+          },
+          "benefits": {
+            "dms_status": "not_mentioned",
+            "dms_notes": null,
+            "other_benefits": [],
+            "evidence": []
+          },
+          "technology_stack": [],
+          "description": null,
+          "requirements": null,
+          "responsibilities": null,
+          "confirmed_facts": [
+            "Есть ссылка на первоисточник"
+          ],
+          "evidence": [
+            {
+              "source_url": "https://hh.ru/vacancy/127548662?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+              "snippet": null,
+              "field_name": "source_url",
+              "extracted_at": "2026-10-14T14:16:12.340862+00:00"
+            }
+          ],
+          "technical_analysis": {
+            "technologies": [
+              "Go"
+            ],
+            "go_relevance_score": 60,
+            "task_interest_score": 38,
+            "concurrency_signals": [
+              "load"
+            ],
+            "backend_signals": [
+              "load"
+            ],
+            "concerns": [],
+            "positives": [
+              "Go активно используется в задачах"
+            ],
+            "has_confirmed_tech": true
+          },
+          "career_fit": {
+            "fit_score": 80,
+            "career_growth_score": 90,
+            "motivation_score": 80,
+            "strong_points": [
+              "Формат работы подходит: remote",
+              "Go активно используется в задачах"
+            ],
+            "risks": [
+              "Зарплата не указана — требуется уточнение"
+            ],
+            "questions_for_interview": [
+              "Каков диапазон зарплат для этой позиции?",
+              "Есть ли ДМС и другие соц benefits?",
+              "Каков стек технологий и процессы разработки?"
+            ],
+            "recommendation": "Рекомендуется к рассмотрению"
+          },
+          "score": {
+            "salary_fit": 30,
+            "format_fit": 100,
+            "dms_fit": 40,
+            "technical_interest": 38,
+            "career_potential": 80,
+            "total": 56,
+            "weights": {
+              "salary_fit": 0.25,
+              "format_fit": 0.25,
+              "dms_fit": 0.15,
+              "technical_interest": 0.25,
+              "career_potential": 0.1
+            },
+            "explanation": [
+              "Низкое соответствие зарплатному ожиданию",
+              "ДМС не подтверждён или не указан",
+              "Технические задачи могут быть рутинными"
+            ]
+          },
+          "status": "needs_clarification",
+          "non_compliance_reasons": [],
+          "data_completeness": 1,
+          "llm_summary": null,
+          "llm_why_fits": null,
+          "llm_unknowns": [],
+          "llm_what_to_ask": []
+        },
+        {
+          "id": "133984341",
+          "title": "Go developer / engineer (High Load Platform)",
+          "employer": "ОООСофтвайс",
+          "source_url": "https://hh.ru/vacancy/133984341?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "alternate_urls": [],
+          "canonical_url": "https://hh.ru/vacancy/133984341?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "source_name": "hh.ru (scraped)",
+          "published_at": null,
+          "checked_at": "2026-10-14T14:16:12.340864+00:00",
+          "location": "Санкт-Петербург",
+          "work_format": "remote",
+          "salary": {
+            "from_amount": null,
+            "to_amount": null,
+            "currency": "unknown",
+            "tax_type": "unknown",
+            "period": "month",
+            "raw_text": null,
+            "evidence": []
+          },
+          "benefits": {
+            "dms_status": "not_mentioned",
+            "dms_notes": null,
+            "other_benefits": [],
+            "evidence": []
+          },
+          "technology_stack": [],
+          "description": null,
+          "requirements": null,
+          "responsibilities": null,
+          "confirmed_facts": [
+            "Есть ссылка на первоисточник"
+          ],
+          "evidence": [
+            {
+              "source_url": "https://hh.ru/vacancy/133984341?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+              "snippet": null,
+              "field_name": "source_url",
+              "extracted_at": "2026-10-14T14:16:12.340864+00:00"
+            }
+          ],
+          "technical_analysis": {
+            "technologies": [
+              "Go"
+            ],
+            "go_relevance_score": 40,
+            "task_interest_score": 38,
+            "concurrency_signals": [
+              "load"
+            ],
+            "backend_signals": [
+              "load"
+            ],
+            "concerns": [],
+            "positives": [],
+            "has_confirmed_tech": true
+          },
+          "career_fit": {
+            "fit_score": 50,
+            "career_growth_score": 60,
+            "motivation_score": 50,
+            "strong_points": [
+              "Формат работы подходит: remote"
+            ],
+            "risks": [
+              "Зарплата не указана — требуется уточнение"
+            ],
+            "questions_for_interview": [
+              "Каков диапазон зарплат для этой позиции?",
+              "Есть ли ДМС и другие соц benefits?",
+              "Каков стек технологий и процессы разработки?"
+            ],
+            "recommendation": "Требует уточнения"
+          },
+          "score": {
+            "salary_fit": 30,
+            "format_fit": 100,
+            "dms_fit": 40,
+            "technical_interest": 38,
+            "career_potential": 50,
+            "total": 53,
+            "weights": {
+              "salary_fit": 0.25,
+              "format_fit": 0.25,
+              "dms_fit": 0.15,
+              "technical_interest": 0.25,
+              "career_potential": 0.1
+            },
+            "explanation": [
+              "Низкое соответствие зарплатному ожиданию",
+              "ДМС не подтверждён или не указан",
+              "Технические задачи могут быть рутинными"
+            ]
+          },
+          "status": "needs_clarification",
+          "non_compliance_reasons": [],
+          "data_completeness": 1,
+          "llm_summary": null,
+          "llm_why_fits": null,
+          "llm_unknowns": [],
+          "llm_what_to_ask": []
+        },
+        {
+          "id": "136057646",
+          "title": "Golang-разработчик",
+          "employer": "Shvacher",
+          "source_url": "https://hh.ru/vacancy/136057646?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "alternate_urls": [],
+          "canonical_url": "https://hh.ru/vacancy/136057646?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "source_name": "hh.ru (scraped)",
+          "published_at": null,
+          "checked_at": "2026-10-14T14:16:12.340866+00:00",
+          "location": "Санкт-Петербург",
+          "work_format": "remote",
+          "salary": {
+            "from_amount": null,
+            "to_amount": null,
+            "currency": "unknown",
+            "tax_type": "unknown",
+            "period": "month",
+            "raw_text": null,
+            "evidence": []
+          },
+          "benefits": {
+            "dms_status": "not_mentioned",
+            "dms_notes": null,
+            "other_benefits": [],
+            "evidence": []
+          },
+          "technology_stack": [],
+          "description": null,
+          "requirements": null,
+          "responsibilities": null,
+          "confirmed_facts": [
+            "Есть ссылка на первоисточник"
+          ],
+          "evidence": [
+            {
+              "source_url": "https://hh.ru/vacancy/136057646?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+              "snippet": null,
+              "field_name": "source_url",
+              "extracted_at": "2026-10-14T14:16:12.340868+00:00"
+            }
+          ],
+          "technical_analysis": {
+            "technologies": [
+              "Go"
+            ],
+            "go_relevance_score": 60,
+            "task_interest_score": 30,
+            "concurrency_signals": [],
+            "backend_signals": [],
+            "concerns": [],
+            "positives": [
+              "Go активно используется в задачах"
+            ],
+            "has_confirmed_tech": true
+          },
+          "career_fit": {
+            "fit_score": 55,
+            "career_growth_score": 65,
+            "motivation_score": 55,
+            "strong_points": [
+              "Формат работы подходит: remote",
+              "Go активно используется в задачах"
+            ],
+            "risks": [
+              "Зарплата не указана — требуется уточнение"
+            ],
+            "questions_for_interview": [
+              "Каков диапазон зарплат для этой позиции?",
+              "Есть ли ДМС и другие соц benefits?",
+              "Каков стек технологий и процессы разработки?"
+            ],
+            "recommendation": "Требует уточнения"
+          },
+          "score": {
+            "salary_fit": 30,
+            "format_fit": 100,
+            "dms_fit": 40,
+            "technical_interest": 30,
+            "career_potential": 55,
+            "total": 51,
+            "weights": {
+              "salary_fit": 0.25,
+              "format_fit": 0.25,
+              "dms_fit": 0.15,
+              "technical_interest": 0.25,
+              "career_potential": 0.1
+            },
+            "explanation": [
+              "Низкое соответствие зарплатному ожиданию",
+              "ДМС не подтверждён или не указан",
+              "Технические задачи могут быть рутинными"
+            ]
+          },
+          "status": "needs_clarification",
+          "non_compliance_reasons": [],
+          "data_completeness": 1,
+          "llm_summary": null,
+          "llm_why_fits": null,
+          "llm_unknowns": [],
+          "llm_what_to_ask": []
+        },
+        {
+          "id": "138364470",
+          "title": "Разработчик Golang (Kubernetes)",
+          "employer": "ОООБАЗИС",
+          "source_url": "https://hh.ru/vacancy/138364470?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "alternate_urls": [],
+          "canonical_url": "https://hh.ru/vacancy/138364470?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "source_name": "hh.ru (scraped)",
+          "published_at": null,
+          "checked_at": "2026-10-14T14:16:12.340870+00:00",
+          "location": "Москва",
+          "work_format": "remote",
+          "salary": {
+            "from_amount": null,
+            "to_amount": null,
+            "currency": "unknown",
+            "tax_type": "unknown",
+            "period": "month",
+            "raw_text": null,
+            "evidence": []
+          },
+          "benefits": {
+            "dms_status": "not_mentioned",
+            "dms_notes": null,
+            "other_benefits": [],
+            "evidence": []
+          },
+          "technology_stack": [],
+          "description": null,
+          "requirements": null,
+          "responsibilities": null,
+          "confirmed_facts": [
+            "Есть ссылка на первоисточник"
+          ],
+          "evidence": [
+            {
+              "source_url": "https://hh.ru/vacancy/138364470?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+              "snippet": null,
+              "field_name": "source_url",
+              "extracted_at": "2026-10-14T14:16:12.340871+00:00"
+            }
+          ],
+          "technical_analysis": {
+            "technologies": [
+              "Go"
+            ],
+            "go_relevance_score": 60,
+            "task_interest_score": 38,
+            "concurrency_signals": [],
+            "backend_signals": [
+              "kubernetes"
+            ],
+            "concerns": [],
+            "positives": [
+              "Go активно используется в задачах"
+            ],
+            "has_confirmed_tech": true
+          },
+          "career_fit": {
+            "fit_score": 55,
+            "career_growth_score": 65,
+            "motivation_score": 55,
+            "strong_points": [
+              "Формат работы подходит: remote",
+              "Go активно используется в задачах"
+            ],
+            "risks": [
+              "Зарплата не указана — требуется уточнение"
+            ],
+            "questions_for_interview": [
+              "Каков диапазон зарплат для этой позиции?",
+              "Есть ли ДМС и другие соц benefits?",
+              "Каков стек технологий и процессы разработки?"
+            ],
+            "recommendation": "Требует уточнения"
+          },
+          "score": {
+            "salary_fit": 30,
+            "format_fit": 100,
+            "dms_fit": 40,
+            "technical_interest": 38,
+            "career_potential": 55,
+            "total": 53,
+            "weights": {
+              "salary_fit": 0.25,
+              "format_fit": 0.25,
+              "dms_fit": 0.15,
+              "technical_interest": 0.25,
+              "career_potential": 0.1
+            },
+            "explanation": [
+              "Низкое соответствие зарплатному ожиданию",
+              "ДМС не подтверждён или не указан",
+              "Технические задачи могут быть рутинными"
+            ]
+          },
+          "status": "needs_clarification",
+          "non_compliance_reasons": [],
+          "data_completeness": 1,
+          "llm_summary": null,
+          "llm_why_fits": null,
+          "llm_unknowns": [],
+          "llm_what_to_ask": []
+        },
+        {
+          "id": "138128568",
+          "title": "Golang-разработчик",
+          "employer": "Headliner",
+          "source_url": "https://hh.ru/vacancy/138128568?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "alternate_urls": [],
+          "canonical_url": "https://hh.ru/vacancy/138128568?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "source_name": "hh.ru (scraped)",
+          "published_at": null,
+          "checked_at": "2026-10-14T14:16:12.340873+00:00",
+          "location": "Санкт-Петербург",
+          "work_format": "remote",
+          "salary": {
+            "from_amount": null,
+            "to_amount": null,
+            "currency": "unknown",
+            "tax_type": "unknown",
+            "period": "month",
+            "raw_text": null,
+            "evidence": []
+          },
+          "benefits": {
+            "dms_status": "not_mentioned",
+            "dms_notes": null,
+            "other_benefits": [],
+            "evidence": []
+          },
+          "technology_stack": [],
+          "description": null,
+          "requirements": null,
+          "responsibilities": null,
+          "confirmed_facts": [
+            "Есть ссылка на первоисточник"
+          ],
+          "evidence": [
+            {
+              "source_url": "https://hh.ru/vacancy/138128568?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+              "snippet": null,
+              "field_name": "source_url",
+              "extracted_at": "2026-10-14T14:16:12.340874+00:00"
+            }
+          ],
+          "technical_analysis": {
+            "technologies": [
+              "Go"
+            ],
+            "go_relevance_score": 60,
+            "task_interest_score": 30,
+            "concurrency_signals": [],
+            "backend_signals": [],
+            "concerns": [],
+            "positives": [
+              "Go активно используется в задачах"
+            ],
+            "has_confirmed_tech": true
+          },
+          "career_fit": {
+            "fit_score": 55,
+            "career_growth_score": 65,
+            "motivation_score": 55,
+            "strong_points": [
+              "Формат работы подходит: remote",
+              "Go активно используется в задачах"
+            ],
+            "risks": [
+              "Зарплата не указана — требуется уточнение"
+            ],
+            "questions_for_interview": [
+              "Каков диапазон зарплат для этой позиции?",
+              "Есть ли ДМС и другие соц benefits?",
+              "Каков стек технологий и процессы разработки?"
+            ],
+            "recommendation": "Требует уточнения"
+          },
+          "score": {
+            "salary_fit": 30,
+            "format_fit": 100,
+            "dms_fit": 40,
+            "technical_interest": 30,
+            "career_potential": 55,
+            "total": 51,
+            "weights": {
+              "salary_fit": 0.25,
+              "format_fit": 0.25,
+              "dms_fit": 0.15,
+              "technical_interest": 0.25,
+              "career_potential": 0.1
+            },
+            "explanation": [
+              "Низкое соответствие зарплатному ожиданию",
+              "ДМС не подтверждён или не указан",
+              "Технические задачи могут быть рутинными"
+            ]
+          },
+          "status": "needs_clarification",
+          "non_compliance_reasons": [],
+          "data_completeness": 1,
+          "llm_summary": null,
+          "llm_why_fits": null,
+          "llm_unknowns": [],
+          "llm_what_to_ask": []
+        },
+        {
+          "id": "137499878",
+          "title": "Разработчик веб-продукта (Middle / Middle+)",
+          "employer": "Юридический центр Восстания 6",
+          "source_url": "https://hh.ru/vacancy/137499878?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "alternate_urls": [],
+          "canonical_url": "https://hh.ru/vacancy/137499878?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "source_name": "hh.ru (scraped)",
+          "published_at": null,
+          "checked_at": "2026-10-14T14:16:12.340876+00:00",
+          "location": "Санкт-Петербург",
+          "work_format": "unknown",
+          "salary": {
+            "from_amount": null,
+            "to_amount": null,
+            "currency": "unknown",
+            "tax_type": "unknown",
+            "period": "month",
+            "raw_text": null,
+            "evidence": []
+          },
+          "benefits": {
+            "dms_status": "not_mentioned",
+            "dms_notes": null,
+            "other_benefits": [],
+            "evidence": []
+          },
+          "technology_stack": [],
+          "description": null,
+          "requirements": null,
+          "responsibilities": null,
+          "confirmed_facts": [
+            "Есть ссылка на первоисточник"
+          ],
+          "evidence": [
+            {
+              "source_url": "https://hh.ru/vacancy/137499878?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+              "snippet": null,
+              "field_name": "source_url",
+              "extracted_at": "2026-10-14T14:16:12.340877+00:00"
+            }
+          ],
+          "technical_analysis": {
+            "technologies": [],
+            "go_relevance_score": 20,
+            "task_interest_score": 30,
+            "concurrency_signals": [],
+            "backend_signals": [],
+            "concerns": [
+              "Go не упоминается в описании"
+            ],
+            "positives": [],
+            "has_confirmed_tech": false
+          },
+          "career_fit": {
+            "fit_score": 60,
+            "career_growth_score": 70,
+            "motivation_score": 60,
+            "strong_points": [],
+            "risks": [
+              "Офисный формат может не соответствовать ожиданиям",
+              "Зарплата не указана — требуется уточнение",
+              "Go не упоминается в описании"
+            ],
+            "questions_for_interview": [
+              "Каков диапазон зарплат для этой позиции?",
+              "Есть ли ДМС и другие соц benefits?",
+              "Каков стек технологий и процессы разработки?"
+            ],
+            "recommendation": "Рекомендуется к рассмотрению"
+          },
+          "score": {
+            "salary_fit": 30,
+            "format_fit": 50,
+            "dms_fit": 40,
+            "technical_interest": 30,
+            "career_potential": 60,
+            "total": 39,
+            "weights": {
+              "salary_fit": 0.25,
+              "format_fit": 0.25,
+              "dms_fit": 0.15,
+              "technical_interest": 0.25,
+              "career_potential": 0.1
+            },
+            "explanation": [
+              "Низкое соответствие зарплатному ожиданию",
+              "ДМС не подтверждён или не указан",
+              "Технические задачи могут быть рутинными"
+            ]
+          },
+          "status": "needs_clarification",
+          "non_compliance_reasons": [],
+          "data_completeness": 1,
+          "llm_summary": null,
+          "llm_why_fits": null,
+          "llm_unknowns": [],
+          "llm_what_to_ask": []
+        },
+        {
+          "id": "134907901",
+          "title": "Go разработчик (Test Management System), Ozon Банк",
+          "employer": "Ozon Банк",
+          "source_url": "https://hh.ru/vacancy/134907901?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "alternate_urls": [],
+          "canonical_url": "https://hh.ru/vacancy/134907901?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "source_name": "hh.ru (scraped)",
+          "published_at": null,
+          "checked_at": "2026-10-14T14:16:12.340879+00:00",
+          "location": "Санкт-Петербург",
+          "work_format": "remote",
+          "salary": {
+            "from_amount": null,
+            "to_amount": null,
+            "currency": "unknown",
+            "tax_type": "unknown",
+            "period": "month",
+            "raw_text": null,
+            "evidence": []
+          },
+          "benefits": {
+            "dms_status": "not_mentioned",
+            "dms_notes": null,
+            "other_benefits": [],
+            "evidence": []
+          },
+          "technology_stack": [],
+          "description": null,
+          "requirements": null,
+          "responsibilities": null,
+          "confirmed_facts": [
+            "Есть ссылка на первоисточник"
+          ],
+          "evidence": [
+            {
+              "source_url": "https://hh.ru/vacancy/134907901?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+              "snippet": null,
+              "field_name": "source_url",
+              "extracted_at": "2026-10-14T14:16:12.340880+00:00"
+            }
+          ],
+          "technical_analysis": {
+            "technologies": [
+              "Go"
+            ],
+            "go_relevance_score": 40,
+            "task_interest_score": 30,
+            "concurrency_signals": [],
+            "backend_signals": [],
+            "concerns": [],
+            "positives": [],
+            "has_confirmed_tech": true
+          },
+          "career_fit": {
+            "fit_score": 55,
+            "career_growth_score": 65,
+            "motivation_score": 55,
+            "strong_points": [
+              "Формат работы подходит: remote"
+            ],
+            "risks": [
+              "Зарплата не указана — требуется уточнение"
+            ],
+            "questions_for_interview": [
+              "Каков диапазон зарплат для этой позиции?",
+              "Есть ли ДМС и другие соц benefits?",
+              "Каков стек технологий и процессы разработки?"
+            ],
+            "recommendation": "Требует уточнения"
+          },
+          "score": {
+            "salary_fit": 30,
+            "format_fit": 100,
+            "dms_fit": 40,
+            "technical_interest": 30,
+            "career_potential": 55,
+            "total": 51,
+            "weights": {
+              "salary_fit": 0.25,
+              "format_fit": 0.25,
+              "dms_fit": 0.15,
+              "technical_interest": 0.25,
+              "career_potential": 0.1
+            },
+            "explanation": [
+              "Низкое соответствие зарплатному ожиданию",
+              "ДМС не подтверждён или не указан",
+              "Технические задачи могут быть рутинными"
+            ]
+          },
+          "status": "needs_clarification",
+          "non_compliance_reasons": [],
+          "data_completeness": 1,
+          "llm_summary": null,
+          "llm_why_fits": null,
+          "llm_unknowns": [],
+          "llm_what_to_ask": []
+        },
+        {
+          "id": "134920948",
+          "title": "Старший Go разработчик (Load Testing Platform), Ozon Банк",
+          "employer": "Ozon Банк",
+          "source_url": "https://hh.ru/vacancy/134920948?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "alternate_urls": [],
+          "canonical_url": "https://hh.ru/vacancy/134920948?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "source_name": "hh.ru (scraped)",
+          "published_at": null,
+          "checked_at": "2026-10-14T14:16:12.340882+00:00",
+          "location": "Санкт-Петербург",
+          "work_format": "remote",
+          "salary": {
+            "from_amount": null,
+            "to_amount": null,
+            "currency": "unknown",
+            "tax_type": "unknown",
+            "period": "month",
+            "raw_text": null,
+            "evidence": []
+          },
+          "benefits": {
+            "dms_status": "not_mentioned",
+            "dms_notes": null,
+            "other_benefits": [],
+            "evidence": []
+          },
+          "technology_stack": [],
+          "description": null,
+          "requirements": null,
+          "responsibilities": null,
+          "confirmed_facts": [
+            "Есть ссылка на первоисточник"
+          ],
+          "evidence": [
+            {
+              "source_url": "https://hh.ru/vacancy/134920948?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+              "snippet": null,
+              "field_name": "source_url",
+              "extracted_at": "2026-10-14T14:16:12.340883+00:00"
+            }
+          ],
+          "technical_analysis": {
+            "technologies": [
+              "Go"
+            ],
+            "go_relevance_score": 40,
+            "task_interest_score": 38,
+            "concurrency_signals": [
+              "load"
+            ],
+            "backend_signals": [
+              "load"
+            ],
+            "concerns": [],
+            "positives": [],
+            "has_confirmed_tech": true
+          },
+          "career_fit": {
+            "fit_score": 80,
+            "career_growth_score": 90,
+            "motivation_score": 80,
+            "strong_points": [
+              "Формат работы подходит: remote"
+            ],
+            "risks": [
+              "Зарплата не указана — требуется уточнение"
+            ],
+            "questions_for_interview": [
+              "Каков диапазон зарплат для этой позиции?",
+              "Есть ли ДМС и другие соц benefits?",
+              "Каков стек технологий и процессы разработки?"
+            ],
+            "recommendation": "Рекомендуется к рассмотрению"
+          },
+          "score": {
+            "salary_fit": 30,
+            "format_fit": 100,
+            "dms_fit": 40,
+            "technical_interest": 38,
+            "career_potential": 80,
+            "total": 56,
+            "weights": {
+              "salary_fit": 0.25,
+              "format_fit": 0.25,
+              "dms_fit": 0.15,
+              "technical_interest": 0.25,
+              "career_potential": 0.1
+            },
+            "explanation": [
+              "Низкое соответствие зарплатному ожиданию",
+              "ДМС не подтверждён или не указан",
+              "Технические задачи могут быть рутинными"
+            ]
+          },
+          "status": "needs_clarification",
+          "non_compliance_reasons": [],
+          "data_completeness": 1,
+          "llm_summary": null,
+          "llm_why_fits": null,
+          "llm_unknowns": [],
+          "llm_what_to_ask": []
+        },
+        {
+          "id": "138128553",
+          "title": "Старший разработчик Go, Сервисы привлечения юридических лиц, Ozon Банк",
+          "employer": "Ozon Банк",
+          "source_url": "https://hh.ru/vacancy/138128553?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "alternate_urls": [],
+          "canonical_url": "https://hh.ru/vacancy/138128553?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "source_name": "hh.ru (scraped)",
+          "published_at": null,
+          "checked_at": "2026-10-14T14:16:12.340885+00:00",
+          "location": "Санкт-Петербург",
+          "work_format": "remote",
+          "salary": {
+            "from_amount": null,
+            "to_amount": null,
+            "currency": "unknown",
+            "tax_type": "unknown",
+            "period": "month",
+            "raw_text": null,
+            "evidence": []
+          },
+          "benefits": {
+            "dms_status": "not_mentioned",
+            "dms_notes": null,
+            "other_benefits": [],
+            "evidence": []
+          },
+          "technology_stack": [],
+          "description": null,
+          "requirements": null,
+          "responsibilities": null,
+          "confirmed_facts": [
+            "Есть ссылка на первоисточник"
+          ],
+          "evidence": [
+            {
+              "source_url": "https://hh.ru/vacancy/138128553?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+              "snippet": null,
+              "field_name": "source_url",
+              "extracted_at": "2026-10-14T14:16:12.340886+00:00"
+            }
+          ],
+          "technical_analysis": {
+            "technologies": [
+              "Go"
+            ],
+            "go_relevance_score": 40,
+            "task_interest_score": 38,
+            "concurrency_signals": [],
+            "backend_signals": [
+              "сервис"
+            ],
+            "concerns": [],
+            "positives": [],
+            "has_confirmed_tech": true
+          },
+          "career_fit": {
+            "fit_score": 80,
+            "career_growth_score": 90,
+            "motivation_score": 80,
+            "strong_points": [
+              "Формат работы подходит: remote"
+            ],
+            "risks": [
+              "Зарплата не указана — требуется уточнение"
+            ],
+            "questions_for_interview": [
+              "Каков диапазон зарплат для этой позиции?",
+              "Есть ли ДМС и другие соц benefits?",
+              "Каков стек технологий и процессы разработки?"
+            ],
+            "recommendation": "Рекомендуется к рассмотрению"
+          },
+          "score": {
+            "salary_fit": 30,
+            "format_fit": 100,
+            "dms_fit": 40,
+            "technical_interest": 38,
+            "career_potential": 80,
+            "total": 56,
+            "weights": {
+              "salary_fit": 0.25,
+              "format_fit": 0.25,
+              "dms_fit": 0.15,
+              "technical_interest": 0.25,
+              "career_potential": 0.1
+            },
+            "explanation": [
+              "Низкое соответствие зарплатному ожиданию",
+              "ДМС не подтверждён или не указан",
+              "Технические задачи могут быть рутинными"
+            ]
+          },
+          "status": "needs_clarification",
+          "non_compliance_reasons": [],
+          "data_completeness": 1,
+          "llm_summary": null,
+          "llm_why_fits": null,
+          "llm_unknowns": [],
+          "llm_what_to_ask": []
+        },
+        {
+          "id": "138273981",
+          "title": "Tech Lead / Lead Software Engineer (PHP/Go, Infrastructure)",
+          "employer": "Proxy.Market",
+          "source_url": "https://hh.ru/vacancy/138273981?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "alternate_urls": [],
+          "canonical_url": "https://hh.ru/vacancy/138273981?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "source_name": "hh.ru (scraped)",
+          "published_at": null,
+          "checked_at": "2026-10-14T14:16:12.340888+00:00",
+          "location": "Санкт-Петербург",
+          "work_format": "remote",
+          "salary": {
+            "from_amount": null,
+            "to_amount": null,
+            "currency": "unknown",
+            "tax_type": "unknown",
+            "period": "month",
+            "raw_text": null,
+            "evidence": []
+          },
+          "benefits": {
+            "dms_status": "not_mentioned",
+            "dms_notes": null,
+            "other_benefits": [],
+            "evidence": []
+          },
+          "technology_stack": [],
+          "description": null,
+          "requirements": null,
+          "responsibilities": null,
+          "confirmed_facts": [
+            "Есть ссылка на первоисточник"
+          ],
+          "evidence": [
+            {
+              "source_url": "https://hh.ru/vacancy/138273981?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+              "snippet": null,
+              "field_name": "source_url",
+              "extracted_at": "2026-10-14T14:16:12.340889+00:00"
+            }
+          ],
+          "technical_analysis": {
+            "technologies": [
+              "Go"
+            ],
+            "go_relevance_score": 40,
+            "task_interest_score": 30,
+            "concurrency_signals": [],
+            "backend_signals": [],
+            "concerns": [],
+            "positives": [],
+            "has_confirmed_tech": true
+          },
+          "career_fit": {
+            "fit_score": 80,
+            "career_growth_score": 90,
+            "motivation_score": 80,
+            "strong_points": [
+              "Формат работы подходит: remote"
+            ],
+            "risks": [
+              "Зарплата не указана — требуется уточнение"
+            ],
+            "questions_for_interview": [
+              "Каков диапазон зарплат для этой позиции?",
+              "Есть ли ДМС и другие соц benefits?",
+              "Каков стек технологий и процессы разработки?"
+            ],
+            "recommendation": "Рекомендуется к рассмотрению"
+          },
+          "score": {
+            "salary_fit": 30,
+            "format_fit": 100,
+            "dms_fit": 40,
+            "technical_interest": 30,
+            "career_potential": 80,
+            "total": 54,
+            "weights": {
+              "salary_fit": 0.25,
+              "format_fit": 0.25,
+              "dms_fit": 0.15,
+              "technical_interest": 0.25,
+              "career_potential": 0.1
+            },
+            "explanation": [
+              "Низкое соответствие зарплатному ожиданию",
+              "ДМС не подтверждён или не указан",
+              "Технические задачи могут быть рутинными"
+            ]
+          },
+          "status": "needs_clarification",
+          "non_compliance_reasons": [],
+          "data_completeness": 1,
+          "llm_summary": null,
+          "llm_why_fits": null,
+          "llm_unknowns": [],
+          "llm_what_to_ask": []
+        },
+        {
+          "id": "138184945",
+          "title": "Java Backend разработчик",
+          "employer": "WILIX",
+          "source_url": "https://hh.ru/vacancy/138184945?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "alternate_urls": [],
+          "canonical_url": "https://hh.ru/vacancy/138184945?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+          "source_name": "hh.ru (scraped)",
+          "published_at": null,
+          "checked_at": "2026-10-14T14:16:12.340891+00:00",
+          "location": "Санкт-Петербург",
+          "work_format": "remote",
+          "salary": {
+            "from_amount": null,
+            "to_amount": null,
+            "currency": "unknown",
+            "tax_type": "unknown",
+            "period": "month",
+            "raw_text": null,
+            "evidence": []
+          },
+          "benefits": {
+            "dms_status": "not_mentioned",
+            "dms_notes": null,
+            "other_benefits": [],
+            "evidence": []
+          },
+          "technology_stack": [],
+          "description": null,
+          "requirements": null,
+          "responsibilities": null,
+          "confirmed_facts": [
+            "Есть ссылка на первоисточник"
+          ],
+          "evidence": [
+            {
+              "source_url": "https://hh.ru/vacancy/138184945?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+              "snippet": null,
+              "field_name": "source_url",
+              "extracted_at": "2026-10-14T14:16:12.340891+00:00"
+            }
+          ],
+          "technical_analysis": {
+            "technologies": [],
+            "go_relevance_score": 20,
+            "task_interest_score": 38,
+            "concurrency_signals": [],
+            "backend_signals": [
+              "backend"
+            ],
+            "concerns": [
+              "Go не упоминается в описании"
+            ],
+            "positives": [],
+            "has_confirmed_tech": false
+          },
+          "career_fit": {
+            "fit_score": 55,
+            "career_growth_score": 65,
+            "motivation_score": 55,
+            "strong_points": [
+              "Формат работы подходит: remote"
+            ],
+            "risks": [
+              "Зарплата не указана — требуется уточнение",
+              "Go не упоминается в описании"
+            ],
+            "questions_for_interview": [
+              "Каков диапазон зарплат для этой позиции?",
+              "Есть ли ДМС и другие соц benefits?",
+              "Каков стек технологий и процессы разработки?"
+            ],
+            "recommendation": "Требует уточнения"
+          },
+          "score": {
+            "salary_fit": 30,
+            "format_fit": 100,
+            "dms_fit": 40,
+            "technical_interest": 38,
+            "career_potential": 55,
+            "total": 53,
+            "weights": {
+              "salary_fit": 0.25,
+              "format_fit": 0.25,
+              "dms_fit": 0.15,
+              "technical_interest": 0.25,
+              "career_potential": 0.1
+            },
+            "explanation": [
+              "Низкое соответствие зарплатному ожиданию",
+              "ДМС не подтверждён или не указан",
+              "Технические задачи могут быть рутинными"
+            ]
+          },
+          "status": "needs_clarification",
+          "non_compliance_reasons": [],
+          "data_completeness": 1,
+          "llm_summary": null,
+          "llm_why_fits": null,
+          "llm_unknowns": [],
+          "llm_what_to_ask": []
+        }
+      ],
+      "habr.com": []
+    },
+    "qa_issues": [
+      "Вакансия 'Golang-разработчик' имеет локацию, но неизвестный формат работы",
+      "Вакансия 'Go/Python разработчик' имеет локацию, но неизвестный формат работы",
+      "Вакансия 'Senior Golang разработчик' имеет локацию, но неизвестный формат работы",
+      "Вакансия 'Senior Programmatic AdTech Engineer / Fullstack разработчик (офис, Санкт-Петербург)' имеет локацию, но неизвестный формат работы",
+      "Вакансия 'Разработчик веб-продукта (Middle / Middle+)' имеет локацию, но неизвестный формат работы",
+      "Вакансия 'Golang-разработчик' имеет локацию, но неизвестный формат работы",
+      "Вакансия 'Go/Python разработчик' имеет локацию, но неизвестный формат работы",
+      "Вакансия 'Senior Golang разработчик' имеет локацию, но неизвестный формат работы",
+      "Вакансия 'Senior Programmatic AdTech Engineer / Fullstack разработчик (офис, Санкт-Петербург)' имеет локацию, но неизвестный формат работы",
+      "Вакансия 'Разработчик веб-продукта (Middle / Middle+)' имеет локацию, но неизвестный формат работы"
+    ]
+  },
+  "vacancies": [
+    {
+      "id": "137817001",
+      "title": "Go-разработчик (Middle/Senior)",
+      "employer": "Data Light",
+      "source_url": "https://hh.ru/vacancy/137817001?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "alternate_urls": [],
+      "canonical_url": "https://hh.ru/vacancy/137817001?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "source_name": "hh.ru (scraped)",
+      "published_at": null,
+      "checked_at": "2026-10-14T14:16:12.340810+00:00",
+      "location": "Санкт-Петербург",
+      "work_format": "remote",
+      "salary": {
+        "from_amount": null,
+        "to_amount": null,
+        "currency": "unknown",
+        "tax_type": "unknown",
+        "period": "month"
+      },
+      "benefits": {
+        "dms_status": "not_mentioned"
+      },
+      "status": "needs_clarification",
+      "score": 54
+    },
+    {
+      "id": "138445493",
+      "title": "Golang-разработчик",
+      "employer": "ОООРед Софт",
+      "source_url": "https://hh.ru/vacancy/138445493?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "alternate_urls": [],
+      "canonical_url": "https://hh.ru/vacancy/138445493?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "source_name": "hh.ru (scraped)",
+      "published_at": null,
+      "checked_at": "2026-10-14T14:16:12.340828+00:00",
+      "location": "Санкт-Петербург, р-н Московский",
+      "work_format": "unknown",
+      "salary": {
+        "from_amount": null,
+        "to_amount": null,
+        "currency": "unknown",
+        "tax_type": "unknown",
+        "period": "month"
+      },
+      "benefits": {
+        "dms_status": "not_mentioned"
+      },
+      "status": "needs_clarification",
+      "score": 39
+    },
+    {
+      "id": "137107180",
+      "title": "Go/Python разработчик",
+      "employer": "GS Labs",
+      "source_url": "https://hh.ru/vacancy/137107180?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "alternate_urls": [],
+      "canonical_url": "https://hh.ru/vacancy/137107180?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "source_name": "hh.ru (scraped)",
+      "published_at": null,
+      "checked_at": "2026-10-14T14:16:12.340836+00:00",
+      "location": "Санкт-Петербург",
+      "work_format": "unknown",
+      "salary": {
+        "from_amount": null,
+        "to_amount": null,
+        "currency": "unknown",
+        "tax_type": "unknown",
+        "period": "month"
+      },
+      "benefits": {
+        "dms_status": "not_mentioned"
+      },
+      "status": "needs_clarification",
+      "score": 39
+    },
+    {
+      "id": "138381728",
+      "title": "Senior Golang разработчик",
+      "employer": "SearchInform",
+      "source_url": "https://hh.ru/vacancy/138381728?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "alternate_urls": [],
+      "canonical_url": "https://hh.ru/vacancy/138381728?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "source_name": "hh.ru (scraped)",
+      "published_at": null,
+      "checked_at": "2026-10-14T14:16:12.340840+00:00",
+      "location": "Санкт-Петербург",
+      "work_format": "unknown",
+      "salary": {
+        "from_amount": null,
+        "to_amount": null,
+        "currency": "unknown",
+        "tax_type": "unknown",
+        "period": "month"
+      },
+      "benefits": {
+        "dms_status": "not_mentioned"
+      },
+      "status": "needs_clarification",
+      "score": 41
+    },
+    {
+      "id": "137453601",
+      "title": "Senior Programmatic AdTech Engineer / Fullstack разработчик (офис, Санкт-Петербург)",
+      "employer": "Дартс рекрутинг сервисез",
+      "source_url": "https://hh.ru/vacancy/137453601?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "alternate_urls": [],
+      "canonical_url": "https://hh.ru/vacancy/137453601?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "source_name": "hh.ru (scraped)",
+      "published_at": null,
+      "checked_at": "2026-10-14T14:16:12.340844+00:00",
+      "location": "Санкт-Петербург",
+      "work_format": "unknown",
+      "salary": {
+        "from_amount": null,
+        "to_amount": null,
+        "currency": "unknown",
+        "tax_type": "unknown",
+        "period": "month"
+      },
+      "benefits": {
+        "dms_status": "not_mentioned"
+      },
+      "status": "needs_clarification",
+      "score": 41
+    },
+    {
+      "id": "138354826",
+      "title": "Senior Backend Developer/Ведущий разработчик (Go)",
+      "employer": "bnovo",
+      "source_url": "https://hh.ru/vacancy/138354826?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "alternate_urls": [],
+      "canonical_url": "https://hh.ru/vacancy/138354826?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "source_name": "hh.ru (scraped)",
+      "published_at": null,
+      "checked_at": "2026-10-14T14:16:12.340849+00:00",
+      "location": "Санкт-Петербург, р-н Центральный",
+      "work_format": "remote",
+      "salary": {
+        "from_amount": null,
+        "to_amount": null,
+        "currency": "unknown",
+        "tax_type": "unknown",
+        "period": "month"
+      },
+      "benefits": {
+        "dms_status": "not_mentioned"
+      },
+      "status": "needs_clarification",
+      "score": 56
+    },
+    {
+      "id": "125428124",
+      "title": "Старший разработчик Go, Разработка систем оценки рисков",
+      "employer": "Ozon Банк",
+      "source_url": "https://hh.ru/vacancy/125428124?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "alternate_urls": [],
+      "canonical_url": "https://hh.ru/vacancy/125428124?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "source_name": "hh.ru (scraped)",
+      "published_at": null,
+      "checked_at": "2026-10-14T14:16:12.340852+00:00",
+      "location": "Санкт-Петербург",
+      "work_format": "remote",
+      "salary": {
+        "from_amount": null,
+        "to_amount": null,
+        "currency": "unknown",
+        "tax_type": "unknown",
+        "period": "month"
+      },
+      "benefits": {
+        "dms_status": "not_mentioned"
+      },
+      "status": "needs_clarification",
+      "score": 54
+    },
+    {
+      "id": "137977897",
+      "title": "Backend (AI-native) разработчик",
+      "employer": "Сёрф",
+      "source_url": "https://hh.ru/vacancy/137977897?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "alternate_urls": [],
+      "canonical_url": "https://hh.ru/vacancy/137977897?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "source_name": "hh.ru (scraped)",
+      "published_at": null,
+      "checked_at": "2026-10-14T14:16:12.340855+00:00",
+      "location": "Санкт-Петербург",
+      "work_format": "remote",
+      "salary": {
+        "from_amount": null,
+        "to_amount": null,
+        "currency": "unknown",
+        "tax_type": "unknown",
+        "period": "month"
+      },
+      "benefits": {
+        "dms_status": "not_mentioned"
+      },
+      "status": "needs_clarification",
+      "score": 53
+    },
+    {
+      "id": "137532490",
+      "title": "Backend (AI-native) разработчик",
+      "employer": "Сёрф",
+      "source_url": "https://hh.ru/vacancy/137532490?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "alternate_urls": [],
+      "canonical_url": "https://hh.ru/vacancy/137532490?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "source_name": "hh.ru (scraped)",
+      "published_at": null,
+      "checked_at": "2026-10-14T14:16:12.340858+00:00",
+      "location": "Санкт-Петербург",
+      "work_format": "remote",
+      "salary": {
+        "from_amount": null,
+        "to_amount": null,
+        "currency": "unknown",
+        "tax_type": "unknown",
+        "period": "month"
+      },
+      "benefits": {
+        "dms_status": "not_mentioned"
+      },
+      "status": "needs_clarification",
+      "score": 53
+    },
+    {
+      "id": "127548662",
+      "title": "Senior/Middle+ Golang-разработчик (телеметрия, high-load)",
+      "employer": "ОООДатаджайл",
+      "source_url": "https://hh.ru/vacancy/127548662?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "alternate_urls": [],
+      "canonical_url": "https://hh.ru/vacancy/127548662?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "source_name": "hh.ru (scraped)",
+      "published_at": null,
+      "checked_at": "2026-10-14T14:16:12.340861+00:00",
+      "location": "Санкт-Петербург, р-н Кировский",
+      "work_format": "remote",
+      "salary": {
+        "from_amount": null,
+        "to_amount": null,
+        "currency": "unknown",
+        "tax_type": "unknown",
+        "period": "month"
+      },
+      "benefits": {
+        "dms_status": "not_mentioned"
+      },
+      "status": "needs_clarification",
+      "score": 56
+    },
+    {
+      "id": "133984341",
+      "title": "Go developer / engineer (High Load Platform)",
+      "employer": "ОООСофтвайс",
+      "source_url": "https://hh.ru/vacancy/133984341?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "alternate_urls": [],
+      "canonical_url": "https://hh.ru/vacancy/133984341?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "source_name": "hh.ru (scraped)",
+      "published_at": null,
+      "checked_at": "2026-10-14T14:16:12.340864+00:00",
+      "location": "Санкт-Петербург",
+      "work_format": "remote",
+      "salary": {
+        "from_amount": null,
+        "to_amount": null,
+        "currency": "unknown",
+        "tax_type": "unknown",
+        "period": "month"
+      },
+      "benefits": {
+        "dms_status": "not_mentioned"
+      },
+      "status": "needs_clarification",
+      "score": 53
+    },
+    {
+      "id": "136057646",
+      "title": "Golang-разработчик",
+      "employer": "Shvacher",
+      "source_url": "https://hh.ru/vacancy/136057646?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "alternate_urls": [],
+      "canonical_url": "https://hh.ru/vacancy/136057646?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "source_name": "hh.ru (scraped)",
+      "published_at": null,
+      "checked_at": "2026-10-14T14:16:12.340866+00:00",
+      "location": "Санкт-Петербург",
+      "work_format": "remote",
+      "salary": {
+        "from_amount": null,
+        "to_amount": null,
+        "currency": "unknown",
+        "tax_type": "unknown",
+        "period": "month"
+      },
+      "benefits": {
+        "dms_status": "not_mentioned"
+      },
+      "status": "needs_clarification",
+      "score": 51
+    },
+    {
+      "id": "138364470",
+      "title": "Разработчик Golang (Kubernetes)",
+      "employer": "ОООБАЗИС",
+      "source_url": "https://hh.ru/vacancy/138364470?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "alternate_urls": [],
+      "canonical_url": "https://hh.ru/vacancy/138364470?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "source_name": "hh.ru (scraped)",
+      "published_at": null,
+      "checked_at": "2026-10-14T14:16:12.340870+00:00",
+      "location": "Москва",
+      "work_format": "remote",
+      "salary": {
+        "from_amount": null,
+        "to_amount": null,
+        "currency": "unknown",
+        "tax_type": "unknown",
+        "period": "month"
+      },
+      "benefits": {
+        "dms_status": "not_mentioned"
+      },
+      "status": "needs_clarification",
+      "score": 53
+    },
+    {
+      "id": "138128568",
+      "title": "Golang-разработчик",
+      "employer": "Headliner",
+      "source_url": "https://hh.ru/vacancy/138128568?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "alternate_urls": [],
+      "canonical_url": "https://hh.ru/vacancy/138128568?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "source_name": "hh.ru (scraped)",
+      "published_at": null,
+      "checked_at": "2026-10-14T14:16:12.340873+00:00",
+      "location": "Санкт-Петербург",
+      "work_format": "remote",
+      "salary": {
+        "from_amount": null,
+        "to_amount": null,
+        "currency": "unknown",
+        "tax_type": "unknown",
+        "period": "month"
+      },
+      "benefits": {
+        "dms_status": "not_mentioned"
+      },
+      "status": "needs_clarification",
+      "score": 51
+    },
+    {
+      "id": "137499878",
+      "title": "Разработчик веб-продукта (Middle / Middle+)",
+      "employer": "Юридический центр Восстания 6",
+      "source_url": "https://hh.ru/vacancy/137499878?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "alternate_urls": [],
+      "canonical_url": "https://hh.ru/vacancy/137499878?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "source_name": "hh.ru (scraped)",
+      "published_at": null,
+      "checked_at": "2026-10-14T14:16:12.340876+00:00",
+      "location": "Санкт-Петербург",
+      "work_format": "unknown",
+      "salary": {
+        "from_amount": null,
+        "to_amount": null,
+        "currency": "unknown",
+        "tax_type": "unknown",
+        "period": "month"
+      },
+      "benefits": {
+        "dms_status": "not_mentioned"
+      },
+      "status": "needs_clarification",
+      "score": 39
+    },
+    {
+      "id": "134907901",
+      "title": "Go разработчик (Test Management System), Ozon Банк",
+      "employer": "Ozon Банк",
+      "source_url": "https://hh.ru/vacancy/134907901?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "alternate_urls": [],
+      "canonical_url": "https://hh.ru/vacancy/134907901?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "source_name": "hh.ru (scraped)",
+      "published_at": null,
+      "checked_at": "2026-10-14T14:16:12.340879+00:00",
+      "location": "Санкт-Петербург",
+      "work_format": "remote",
+      "salary": {
+        "from_amount": null,
+        "to_amount": null,
+        "currency": "unknown",
+        "tax_type": "unknown",
+        "period": "month"
+      },
+      "benefits": {
+        "dms_status": "not_mentioned"
+      },
+      "status": "needs_clarification",
+      "score": 51
+    },
+    {
+      "id": "134920948",
+      "title": "Старший Go разработчик (Load Testing Platform), Ozon Банк",
+      "employer": "Ozon Банк",
+      "source_url": "https://hh.ru/vacancy/134920948?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "alternate_urls": [],
+      "canonical_url": "https://hh.ru/vacancy/134920948?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "source_name": "hh.ru (scraped)",
+      "published_at": null,
+      "checked_at": "2026-10-14T14:16:12.340882+00:00",
+      "location": "Санкт-Петербург",
+      "work_format": "remote",
+      "salary": {
+        "from_amount": null,
+        "to_amount": null,
+        "currency": "unknown",
+        "tax_type": "unknown",
+        "period": "month"
+      },
+      "benefits": {
+        "dms_status": "not_mentioned"
+      },
+      "status": "needs_clarification",
+      "score": 56
+    },
+    {
+      "id": "138128553",
+      "title": "Старший разработчик Go, Сервисы привлечения юридических лиц, Ozon Банк",
+      "employer": "Ozon Банк",
+      "source_url": "https://hh.ru/vacancy/138128553?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "alternate_urls": [],
+      "canonical_url": "https://hh.ru/vacancy/138128553?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "source_name": "hh.ru (scraped)",
+      "published_at": null,
+      "checked_at": "2026-10-14T14:16:12.340885+00:00",
+      "location": "Санкт-Петербург",
+      "work_format": "remote",
+      "salary": {
+        "from_amount": null,
+        "to_amount": null,
+        "currency": "unknown",
+        "tax_type": "unknown",
+        "period": "month"
+      },
+      "benefits": {
+        "dms_status": "not_mentioned"
+      },
+      "status": "needs_clarification",
+      "score": 56
+    },
+    {
+      "id": "138273981",
+      "title": "Tech Lead / Lead Software Engineer (PHP/Go, Infrastructure)",
+      "employer": "Proxy.Market",
+      "source_url": "https://hh.ru/vacancy/138273981?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "alternate_urls": [],
+      "canonical_url": "https://hh.ru/vacancy/138273981?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "source_name": "hh.ru (scraped)",
+      "published_at": null,
+      "checked_at": "2026-10-14T14:16:12.340888+00:00",
+      "location": "Санкт-Петербург",
+      "work_format": "remote",
+      "salary": {
+        "from_amount": null,
+        "to_amount": null,
+        "currency": "unknown",
+        "tax_type": "unknown",
+        "period": "month"
+      },
+      "benefits": {
+        "dms_status": "not_mentioned"
+      },
+      "status": "needs_clarification",
+      "score": 54
+    },
+    {
+      "id": "138184945",
+      "title": "Java Backend разработчик",
+      "employer": "WILIX",
+      "source_url": "https://hh.ru/vacancy/138184945?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "alternate_urls": [],
+      "canonical_url": "https://hh.ru/vacancy/138184945?query=Go+%D1%80%D0%B0%D0%B7%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D1%87%D0%B8%D0%BA&hhtmFrom=vacancy_search_list",
+      "source_name": "hh.ru (scraped)",
+      "published_at": null,
+      "checked_at": "2026-10-14T14:16:12.340891+00:00",
+      "location": "Санкт-Петербург",
+      "work_format": "remote",
+      "salary": {
+        "from_amount": null,
+        "to_amount": null,
+        "currency": "unknown",
+        "tax_type": "unknown",
+        "period": "month"
+      },
+      "benefits": {
+        "dms_status": "not_mentioned"
+      },
+      "status": "needs_clarification",
+      "score": 53
+    }
+  ]
+}

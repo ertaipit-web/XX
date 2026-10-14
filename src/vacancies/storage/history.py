@@ -18,6 +18,25 @@ DEFAULT_RUNS_DIR = DEFAULT_HISTORY_DIR / "runs"
 DEFAULT_INDEX_FILE = DEFAULT_HISTORY_DIR / "index.json"
 
 
+def _json_serializable(obj: Any) -> Any:
+    """Recursively convert object to JSON-serializable form."""
+    if obj is None:
+        return None
+    if isinstance(obj, (str, int, float, bool)):
+        return obj
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    if hasattr(obj, "value"):  # Enum
+        return obj.value
+    if isinstance(obj, (list, tuple)):
+        return [_json_serializable(item) for item in obj]
+    if isinstance(obj, dict):
+        return {key: _json_serializable(val) for key, val in obj.items()}
+    if hasattr(obj, "__dict__"):  # Dataclass or object
+        return _json_serializable(obj.__dict__)
+    return str(obj)  # Fallback
+
+
 class RunHistory:
     """Manages run history and vacancy tracking across runs."""
 
@@ -43,20 +62,20 @@ class RunHistory:
             "vacancies_unique": run.vacancies_unique,
             "vacancies_suitable": run.vacancies_suitable,
             "vacancies_needs_clarification": run.vacancies_needs_clarification,
-            "errors": run.errors,
+            "errors": _json_serializable(run.errors),
             "agent_results": [
                 {
                     "agent_name": ar.agent_name,
                     "success": ar.success,
-                    "messages": ar.messages,
-                    "errors": ar.errors,
-                    "data": ar.data,
+                    "messages": _json_serializable(ar.messages),
+                    "errors": _json_serializable(ar.errors),
+                    "data": _json_serializable(ar.data),
                     "processed_count": ar.processed_count,
                 }
                 for ar in run.agent_results
             ],
-            "metadata": run.metadata,
-            "vacancies": [self._vacancy_to_dict(v) for v in report.vacancies],
+            "metadata": _json_serializable(run.metadata),
+            "vacancies": [_json_serializable(self._vacancy_to_dict(v)) for v in report.vacancies],
         }
 
         run_file.write_text(json.dumps(run_data, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -144,6 +163,27 @@ class RunHistory:
                         return json.loads(run_file.read_text(encoding="utf-8"))
             except Exception:
                 continue
+        return None
+
+    def list_runs(self, limit: int = 10) -> List[Dict[str, Any]]:
+        """List recent runs from index."""
+        if not self.index_file.exists():
+            return []
+        try:
+            index = json.loads(self.index_file.read_text(encoding="utf-8"))
+        except Exception:
+            return []
+        runs = index.get("runs", [])
+        return runs[-limit:]
+
+    def get_run(self, run_id: str) -> Optional[Dict[str, Any]]:
+        """Get full run data by run_id."""
+        run_file = self.runs_dir / f"{run_id}.json"
+        if run_file.exists():
+            try:
+                return json.loads(run_file.read_text(encoding="utf-8"))
+            except Exception:
+                return None
         return None
 
     def detect_new_and_changed(self, current_vacancies: List[Vacancy], max_age_days: int = 30) -> Dict[str, List[Vacancy]]:

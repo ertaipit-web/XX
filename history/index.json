@@ -1,0 +1,46 @@
+{
+  "runs": [
+    {
+      "run_id": "fa5bdca3",
+      "started_at": "2026-10-14T14:02:05.739229+00:00",
+      "vacancies_found": 0,
+      "vacancies_unique": 0,
+      "suitable": 0
+    },
+    {
+      "run_id": "e1a5eb81",
+      "started_at": "2026-10-14T14:08:30.172720+00:00",
+      "vacancies_found": 0,
+      "vacancies_unique": 0,
+      "suitable": 0
+    },
+    {
+      "run_id": "b82c34be",
+      "started_at": "2026-10-14T14:11:37.588614+00:00",
+      "vacancies_found": 0,
+      "vacancies_unique": 0,
+      "suitable": 0
+    },
+    {
+      "run_id": "19c21250",
+      "started_at": "2026-10-14T14:16:02.229304+00:00",
+      "vacancies_found": 20,
+      "vacancies_unique": 20,
+      "suitable": 0
+    },
+    {
+      "run_id": "77f04b2b",
+      "started_at": "2026-10-14T14:16:32.652199+00:00",
+      "vacancies_found": 20,
+      "vacancies_unique": 20,
+      "suitable": 0
+    },
+    {
+      "run_id": "e54a30da",
+      "started_at": "2026-10-14T15:00:39.204343+00:00",
+      "vacancies_found": 0,
+      "vacancies_unique": 0,
+      "suitable": 0
+    }
+  ]
+}

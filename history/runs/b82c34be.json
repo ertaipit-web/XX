@@ -1,0 +1,117 @@
+{
+  "run_id": "b82c34be",
+  "started_at": "2026-10-14T14:11:37.588614+00:00",
+  "finished_at": "2026-10-14T14:11:37.593221+00:00",
+  "vacancies_found": 0,
+  "vacancies_checked": 0,
+  "vacancies_unique": 0,
+  "vacancies_suitable": 0,
+  "vacancies_needs_clarification": 0,
+  "errors": [],
+  "agent_results": [
+    {
+      "agent_name": "Career Intake Agent",
+      "success": true,
+      "messages": [
+        "attempt 1"
+      ],
+      "errors": [],
+      "data": {},
+      "processed_count": 0
+    },
+    {
+      "agent_name": "Vacancy Discovery Agent",
+      "success": true,
+      "messages": [
+        "attempt 1"
+      ],
+      "errors": [],
+      "data": {},
+      "processed_count": 0
+    },
+    {
+      "agent_name": "VacancyVerificationAgent",
+      "success": true,
+      "messages": [
+        "attempt 1"
+      ],
+      "errors": [],
+      "data": {},
+      "processed_count": 0
+    },
+    {
+      "agent_name": "GoTechnicalAnalyst",
+      "success": true,
+      "messages": [
+        "attempt 1"
+      ],
+      "errors": [],
+      "data": {},
+      "processed_count": 0
+    },
+    {
+      "agent_name": "Compensation & Benefits Agent",
+      "success": true,
+      "messages": [
+        "attempt 1"
+      ],
+      "errors": [],
+      "data": {},
+      "processed_count": 0
+    },
+    {
+      "agent_name": "CareerFitAnalyst",
+      "success": true,
+      "messages": [
+        "attempt 1"
+      ],
+      "errors": [],
+      "data": {},
+      "processed_count": 0
+    },
+    {
+      "agent_name": "Deduplication & Ranking Agent",
+      "success": true,
+      "messages": [
+        "attempt 1"
+      ],
+      "errors": [],
+      "data": {},
+      "processed_count": 0
+    },
+    {
+      "agent_name": "Quality Assurance Agent (iter 1)",
+      "success": true,
+      "messages": [
+        "attempt 1"
+      ],
+      "errors": [],
+      "data": {},
+      "processed_count": 0
+    },
+    {
+      "agent_name": "Quality Assurance Agent (iter 2)",
+      "success": true,
+      "messages": [
+        "attempt 1"
+      ],
+      "errors": [],
+      "data": {},
+      "processed_count": 0
+    }
+  ],
+  "metadata": {
+    "limitations": [
+      "No real data source configured; returning empty list",
+      "Use source='multi' with multi_adapter for live multi-source search",
+      "Use source='hh' with hh_adapter for hh.ru API",
+      "Use source='fixture' with fixture_path for test data"
+    ],
+    "source_results": {},
+    "qa_issues": [
+      "Отчёт содержит 0 вакансий",
+      "Отчёт содержит 0 вакансий"
+    ]
+  },
+  "vacancies": []
+}

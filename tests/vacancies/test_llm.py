@@ -9,7 +9,7 @@ import json
 
 import pytest
 
-from src.vacancies.core.enums import WorkFormat
+from src.vacancies.core.enums import Currency, TaxType, WorkFormat
 from src.vacancies.core.models import BenefitsInfo, CandidateProfile, SalaryInfo, Vacancy
 from src.vacancies.go_agents.agents import CareerIntakeAgent
 from src.vacancies.go_agents.specialists import CareerFitAnalyst, GoTechnicalAnalyst
@@ -30,7 +30,7 @@ def _vacancy(**kwargs) -> Vacancy:
         employer="TestCo",
         source_url="https://hh.ru/1",
         work_format=WorkFormat.REMOTE,
-        salary=SalaryInfo(from_amount=200000),
+        salary=SalaryInfo(from_amount=200000, currency=Currency.RUB, tax_type=TaxType.NET),
         description="Backend на Go, gRPC, Kubernetes",
     )
     defaults.update(kwargs)
@@ -71,7 +71,7 @@ class TestOrchestratorDisableLLM:
         assert orch.report_writer.llm is None
 
     def test_disable_llm_skips_report_enrichment(self):
-        from src.vacancies.core.enums import WorkFormat
+        from src.vacancies.core.enums import Currency, TaxType, WorkFormat
         from src.vacancies.orchestrator.orchestrator import VacancyResearchOrchestrator
         orch = VacancyResearchOrchestrator(disable_llm=True)
         v = _vacancy()

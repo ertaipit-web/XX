@@ -1,29 +1,28 @@
-﻿# Профиль кандидата Go-разработчик (Junior)
-profession: "Go Developer"
-candidate_level: "junior"
+profession: Go Developer
+candidate_level: junior
 experience_years: null
 location:
-  city: "Санкт-Петербург"
-  country: "Россия"
+  city: Санкт-Петербург
+  country: Россия
 work_preferences:
-  - "remote"
-  - "hybrid_spb"
+- remote
+- hybrid_spb
 salary:
   minimum: 119000
-  currency: "RUB"
-  period: "month"
-  tax_basis: "net"
+  currency: RUB
+  period: month
+  tax_basis: net
   is_mandatory: true
 benefits:
   dms:
-    mode: "prefer"
+    mode: prefer
     required: false
 preferences:
   interesting_technical_work: true
 llm:
-  provider: "ollama"
+  provider: ollama
   cloud_fallback_enabled: false
 search:
-  frequency: "daily"
+  frequency: daily
 report:
-  language: "ru"
+  language: ru
