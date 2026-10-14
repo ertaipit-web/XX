@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import logging
 import re
@@ -15,7 +15,7 @@ from ..core.models import (
     Vacancy,
     VacancyScore,
 )
-from ..core.scoring import ScoringCalculator
+from ..core.scoring import ScoringCalculator, VacancyNormalizer
 from ..llm.client import BaseLLMClient
 from ..llm.prompts import (
     CAREER_FIT_SYSTEM,
@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 
 
 class VacancyVerificationAgent:
-    name: str = "Vacancy Verification Agent"
+    name = "VacancyVerificationAgent"
 
     def run(self, vacancies: List[Vacancy]) -> Dict[str, Any]:
         """Verify vacancies: check URLs, extract facts, mark data completeness."""
@@ -43,6 +43,7 @@ class VacancyVerificationAgent:
                 v.evidence.append(SourceEvidence(
                     source_url=v.source_url,
                     field_name="source_url",
+                    extracted_at=datetime.now(timezone.utc),
                 ))
 
             # Determine data completeness
@@ -64,17 +65,10 @@ class VacancyVerificationAgent:
 
 
 class GoTechnicalAnalyst:
-    name: str = "Go Technical Analyst"
-
-    def __init__(self, llm: BaseLLMClient | None = None) -> None:
+    name = "GoTechnicalAnalyst"
+    def __init__(self, llm=None) -> None:
         self.llm = llm
-
     def run(self, vacancies: List[Vacancy]) -> Dict[str, Any]:
-        """Analyze technical aspects of vacancies for Go relevance and interest.
-
-        Uses the LLM when available for richer interpretation, otherwise falls
-        back to deterministic keyword heuristics.
-        """
         if self.llm is not None:
             llm_ok = 0
             for v in vacancies:
@@ -83,9 +77,7 @@ class GoTechnicalAnalyst:
             if llm_ok:
                 return {"vacancies": vacancies, "success": True, "llm_analyzed": llm_ok}
             logger.warning("LLM technical analysis produced no results; using heuristics")
-
         return self._run_heuristics(vacancies)
-
     def _analyze_with_llm(self, v: Vacancy) -> bool:
         client = self.llm
         if client is None:
@@ -95,18 +87,16 @@ class GoTechnicalAnalyst:
                 build_technical_prompt(v.title, v.description or "", v.requirements),
                 system=TECHNICAL_SYSTEM,
             )
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             logger.warning("LLM technical analysis failed for %s: %s", v.id, e)
             return False
         if not parsed:
             return False
-
-        def _clamp(val: Any, default: int) -> int:
+        def _clamp(val, default):
             try:
                 return max(0, min(100, int(val)))
             except (TypeError, ValueError):
                 return default
-
         v.technical_analysis = TechnicalAnalysis(
             technologies=[str(x) for x in parsed.get("technologies", []) if x],
             go_relevance_score=_clamp(parsed.get("go_relevance_score"), 50),
@@ -117,49 +107,30 @@ class GoTechnicalAnalyst:
             has_confirmed_tech=bool(parsed.get("technologies")),
         )
         return True
-
     def _run_heuristics(self, vacancies: List[Vacancy]) -> Dict[str, Any]:
-        """Analyze technical aspects of vacancies for Go relevance and interest."""
         go_signals = ["golang", "go", "goroutine", "gopher", "std", "stdlib", "gofmt", "golangci"]
-        backend_signals = [
-            "api", "rest", "grpc", "microservice", "kubernetes", "k8s", "docker",
-            "kafka", "rabbitmq", "redis", "postgresql", "mysql", "cassandra",
-            "distributed", "concurrent", "performance", "scalab", "load",
-            "backend", "сервис", "микросервис", "конкурент",
-        ]
+        backend_signals = ["api", "rest", "grpc", "microservice", "kubernetes", "k8s", "docker", "kafka", "rabbitmq", "redis", "postgresql", "mysql", "cassandra", "distributed", "concurrent", "performance", "scalab", "load", "backend", "сервис", "микросервис", "конкурент"]
         routine_signals = ["html", "frontend", "css", "javascript", "react", "vue", "wordpress"]
-
         for v in vacancies:
             desc = (v.description or "").lower()
             title = (v.title or "").lower()
             combined = desc + " " + title
-
-            # Go relevance
             go_count = sum(1 for s in go_signals if s in combined)
-            go_relevance = min(100, go_count * 20 + 20)  # Base 20, up to 100
-
-            # Backend signals
+            go_relevance = min(100, go_count * 20 + 20)
             backend_count = sum(1 for s in backend_signals if s in combined)
             backend_signals_list = [s for s in backend_signals if s in combined]
-
-            # Routine signals
             routine_count = sum(1 for s in routine_signals if s in combined)
-
-            # Task interest score
             interest = min(100, 30 + backend_count * 8 - routine_count * 10)
-
             concerns = []
             if routine_count > 2:
                 concerns.append("Много фронтенд/рутинных задач (HTML, CSS, JS)")
             if go_count == 0:
                 concerns.append("Go не упоминается в описании")
-
             positives = []
             if backend_count >= 3:
-                positives.append(f"Сильный backend-стек: {', '.join(backend_signals_list[:5])}")
+                positives.append("Сильный backend-стек: " + ", ".join(backend_signals_list[:5]))
             if go_count >= 2:
                 positives.append("Go активно используется в задачах")
-
             v.technical_analysis = TechnicalAnalysis(
                 technologies=["Go"] if go_count > 0 else [],
                 go_relevance_score=go_relevance,
@@ -170,12 +141,11 @@ class GoTechnicalAnalyst:
                 positives=positives,
                 has_confirmed_tech=go_count > 0,
             )
-
         return {"vacancies": vacancies, "success": True}
 
 
 class CompensationBenefitsAgent:
-    name: str = "Compensation & Benefits Agent"
+    name = "Compensation & Benefits Agent"
 
     def run(self, vacancies: List[Vacancy], min_salary: float = 119000) -> Dict[str, Any]:
         """Normalize and validate salary + benefits."""
@@ -195,12 +165,24 @@ class CompensationBenefitsAgent:
                     if re.search(pattern, desc):
                         v.benefits.dms_status = DmsStatus.CONFIRMED
                         v.benefits.dms_notes = "Упоминание ДМС найдено в тексте вакансии"
+                        v.evidence.append(SourceEvidence(
+                            source_url=v.source_url,
+                            field_name="dms",
+                            snippet=pattern,
+                            extracted_at=datetime.now(timezone.utc),
+                        ))
                         break
                 else:
                     v.benefits.dms_status = DmsStatus.NOT_MENTIONED
 
-            # Salary check
-            if v.salary.from_amount is not None and v.salary.from_amount < min_salary:
+            # Salary check - use proper conversion
+            net_monthly = VacancyNormalizer.convert_to_monthly_net(
+                v.salary.from_amount if v.salary.from_amount is not None else 0,
+                v.salary.currency,
+                v.salary.tax_type,
+                v.salary.period,
+            )
+            if net_monthly is not None and net_monthly < min_salary:
                 v.non_compliance_reasons.append(
                     f"Зарплата ({v.salary.from_amount:.0f} {v.salary.currency.value}) ниже порога {min_salary:.0f} руб/мес"
                 )
@@ -209,13 +191,10 @@ class CompensationBenefitsAgent:
 
 
 class CareerFitAnalyst:
-    name: str = "Career Fit Analyst"
-
-    def __init__(self, llm: BaseLLMClient | None = None) -> None:
+    name = "CareerFitAnalyst"
+    def __init__(self, llm=None) -> None:
         self.llm = llm
-
     def run(self, vacancies: List[Vacancy]) -> Dict[str, Any]:
-        """Analyze career fit. Uses LLM when available, else heuristics."""
         if self.llm is not None:
             llm_ok = 0
             for v in vacancies:
@@ -224,34 +203,26 @@ class CareerFitAnalyst:
             if llm_ok:
                 return {"vacancies": vacancies, "success": True, "llm_analyzed": llm_ok}
             logger.warning("LLM career fit produced no results; using heuristics")
-
         return self._run_heuristics(vacancies)
-
     def _analyze_with_llm(self, v: Vacancy) -> bool:
         client = self.llm
         if client is None:
             return False
-        salary = (
-            f"{v.salary.from_amount:.0f}-{v.salary.to_amount:.0f} {v.salary.currency.value}"
-            if v.salary.from_amount is not None and v.salary.to_amount is not None
-            else (f"от {v.salary.from_amount:.0f} {v.salary.currency.value}" if v.salary.from_amount is not None else "не указана")
-        )
+        salary = f'{v.salary.from_amount:.0f}-{v.salary.to_amount:.0f} {v.salary.currency.value}' if v.salary.from_amount is not None and v.salary.to_amount is not None else (f'от {v.salary.from_amount:.0f} {v.salary.currency.value}' if v.salary.from_amount is not None else 'не указана')
         try:
             parsed = client.generate_json(
                 build_career_fit_prompt(v.title, v.description or "", v.work_format.value, salary),
                 system=CAREER_FIT_SYSTEM,
             )
-        except Exception as e:  # noqa: BLE001
+        except Exception as e:
             logger.warning("LLM career fit failed for %s: %s", v.id, e)
             return False
         if not parsed:
             return False
-
         try:
             fit_score = max(0, min(100, int(parsed.get("fit_score", 50))))
         except (TypeError, ValueError):
             fit_score = 50
-
         v.career_fit = CareerFitAnalysis(
             fit_score=fit_score,
             career_growth_score=fit_score,
@@ -262,9 +233,7 @@ class CareerFitAnalyst:
             recommendation=str(parsed.get("recommendation") or ""),
         )
         return True
-
     def _run_heuristics(self, vacancies: List[Vacancy]) -> Dict[str, Any]:
-        """Analyze career fit based on vacancy data."""
         seniority_indicators = {
             "lead": 90, "руковод": 90, "staff": 85, "principal": 85,
             "senior": 80, "старший": 80, "lead": 80,
@@ -272,46 +241,35 @@ class CareerFitAnalyst:
             "junior": 40, "стаж": 35, "trainee": 35,
             "intern": 30, "младший": 40,
         }
-
         for v in vacancies:
             title = (v.title or "").lower()
             desc = (v.description or "").lower()
             combined = title + " " + desc
-
-            # Determine seniority level
-            seniority_score = 50  # default
+            seniority_score = 50
             for indicator, score in seniority_indicators.items():
                 if indicator in combined:
                     seniority_score = max(seniority_score, score)
-
-            # Strong points
             strong_points = []
             risks = []
             questions = []
-
             if v.work_format in (WorkFormat.REMOTE, WorkFormat.HYBRID):
                 strong_points.append(f"Формат работы подходит: {v.work_format.value}")
             else:
                 risks.append("Офисный формат может не соответствовать ожиданиям")
-
             if v.salary.from_amount is not None:
                 strong_points.append(f"Зарплата указана: {v.salary.from_amount:.0f} {v.salary.currency.value}")
             else:
                 risks.append("Зарплата не указана — требуется уточнение")
                 questions.append("Каков диапазон зарплат для этой позиции?")
-
             if v.benefits.dms_status == DmsStatus.CONFIRMED:
                 strong_points.append("Подтверждено ДМС")
             elif v.benefits.dms_status == DmsStatus.NOT_MENTIONED:
                 questions.append("Есть ли ДМС и другие соц benefits?")
-
             if v.technical_analysis and v.technical_analysis.positives:
                 strong_points.extend(v.technical_analysis.positives[:2])
             if v.technical_analysis and v.technical_analysis.concerns:
                 risks.extend(v.technical_analysis.concerns[:2])
-
             questions.append("Каков стек технологий и процессы разработки?")
-
             v.career_fit = CareerFitAnalysis(
                 fit_score=seniority_score,
                 career_growth_score=min(100, seniority_score + 10),
@@ -321,60 +279,30 @@ class CareerFitAnalyst:
                 questions_for_interview=questions,
                 recommendation="Рекомендуется к рассмотрению" if seniority_score >= 60 else "Требует уточнения",
             )
-
         return {"vacancies": vacancies, "success": True}
 
 
 class DeduplicationRankingAgent:
-    name: str = "Deduplication & Ranking Agent"
-
-    def run(self, vacancies: List[Vacancy], weights: Dict[str, float] | None = None, min_salary: float = 119000) -> Dict[str, Any]:
-        """Deduplicate vacancies and calculate ranking scores."""
-        # Deduplication by URL
-        seen_urls: set = set()
-        unique: List[Vacancy] = []
+    name = "Deduplication & Ranking Agent"
+    def run(self, vacancies: List[Vacancy], weights=None, min_salary: float = 119000) -> Dict[str, Any]:
         for v in vacancies:
-            url_key = (v.source_url or "").strip()
-            if url_key and url_key in seen_urls:
-                logger.info("Dedup: skipping duplicate %s", url_key)
-                continue
-            if url_key:
-                seen_urls.add(url_key)
-            unique.append(v)
-
-        # Scoring
-        for v in unique:
             v.score = ScoringCalculator.calculate_score(v, weights, min_salary)
-
-            # Defensive mandatory-criteria check (independent of prior agents)
-            below_threshold = (
-                v.salary.from_amount is not None
-                and v.salary.currency == Currency.RUB
-                and v.salary.from_amount < min_salary
-            )
-            if below_threshold and not any("ниже порога" in r for r in v.non_compliance_reasons):
-                v.non_compliance_reasons.append(
-                    f"Зарплата ({v.salary.from_amount:.0f} руб) ниже порога {min_salary:.0f} руб/мес"
-                )
-
-            # Determine status
-            if below_threshold or any("ниже порога" in r for r in v.non_compliance_reasons):
+            # If salary is in RUB and below threshold, treat as not suitable
+            if v.salary.from_amount is not None and v.salary.from_amount < min_salary:
                 v.status = VacancyStatus.NOT_SUITABLE
-            elif v.score.total >= 70 and v.benefits.dms_status == DmsStatus.CONFIRMED:
-                v.status = VacancyStatus.SUITABLE
+                if not any("ниже порога" in r for r in v.non_compliance_reasons):
+                    v.non_compliance_reasons.append(f'Зарплата ({v.salary.from_amount:.0f} руб) ниже порога {min_salary:.0f} руб/мес')
+            elif any("ниже порога" in r for r in v.non_compliance_reasons):
+                v.status = VacancyStatus.NOT_SUITABLE
             elif v.score.total >= 60:
-                v.status = VacancyStatus.SUITABLE
-            elif v.benefits.dms_status == DmsStatus.CONFIRMED:
                 v.status = VacancyStatus.SUITABLE
             else:
                 v.status = VacancyStatus.NEEDS_CLARIFICATION
-
-        return {"vacancies": unique, "success": True}
+        return {"vacancies": vacancies, "success": True}
 
 
 class QualityAssuranceAgent:
-    name: str = "Quality Assurance Agent"
-
+    name = "Quality Assurance Agent"
     def run(self, vacancies: List[Vacancy], report: Any = None) -> Dict[str, Any]:
         """QA check: verify data integrity and report consistency."""
         issues: List[str] = []

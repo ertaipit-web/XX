@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional
 
-from ..adapters.hh_adapter import HHAdapter
+# HHAdapter imported lazily in run() method
 from ..core.contracts import AgentResult, ResearchRun, VacancyReport
 from ..core.models import CandidateProfile, SearchQuery, Vacancy
 from ..go_agents.agents import CareerIntakeAgent, VacancyDiscoveryAgent
@@ -148,7 +148,7 @@ class VacancyResearchOrchestrator:
         profile: CandidateProfile | None = None,
         fixtures: List[Vacancy] | None = None,
         source: str = "test",
-        hh_adapter: HHAdapter | None = None,
+        hh_adapter: Any | None = None,
         fixture_path: str | Path | None = None,
         output_dir: Path = Path("reports"),
         write_reports: bool = True,

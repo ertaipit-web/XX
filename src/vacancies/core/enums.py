@@ -32,6 +32,11 @@ class DmsStatus(str, Enum):
     UNKNOWN = "unknown"
 
 
+class DmsMode(str, Enum):
+    PREFER = "prefer"
+    REQUIRED = "required"
+
+
 class VacancyStatus(str, Enum):
     SUITABLE = "suitable"
     NEEDS_CLARIFICATION = "needs_clarification"

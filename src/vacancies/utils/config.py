@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional
 
 import yaml
 
-from ..core.enums import Currency, WorkFormat
+from ..core.enums import Currency, DmsMode, WorkFormat
 from ..core.models import CandidateProfile
 from ..llm.client import LLMConfig
 
@@ -37,9 +37,9 @@ def _parse_work_formats(raw: List[str]) -> List[WorkFormat]:
     result = []
     for fmt in raw:
         s = str(fmt).strip().lower()
-        if s in ("remote", "удалённо", "удаленно"):
+        if s in ("remote", "удалённо", "удаленно", "remote_any"):
             result.append(WorkFormat.REMOTE)
-        elif s in ("hybrid", "гибрид"):
+        elif s in ("hybrid", "гибрид", "hybrid_spb"):
             result.append(WorkFormat.HYBRID)
         elif s in ("office", "офис"):
             result.append(WorkFormat.OFFICE)
@@ -60,6 +60,17 @@ def _parse_currency(raw: str) -> Currency:
     return mapping.get(s, Currency.UNKNOWN)
 
 
+def _parse_dms_mode(raw: str) -> str:
+    """Parse DMS mode string."""
+    s = str(raw).strip().lower()
+    if s in ("prefer", "preferred"):
+        return "prefer"
+    if s in ("required", "mandatory"):
+        return "required"
+    logger.warning("Unknown DMS mode: %s, defaulting to 'prefer'", raw)
+    return "prefer"
+
+
 class ConfigLoader:
     """Loads and validates YAML configuration files."""
 
@@ -67,7 +78,10 @@ class ConfigLoader:
         self.config_dir = config_dir or DEFAULT_CONFIG_DIR
 
     def load_candidate_profile(self, path: Path | None = None) -> CandidateProfile:
-        """Load candidate profile from YAML file."""
+        """Load candidate profile from YAML file.
+
+        Supports both legacy flat format and new nested format from problem-definition.
+        """
         path = path or DEFAULT_CANDIDATE_YAML
         if not path.exists():
             logger.warning("Candidate config not found: %s, using defaults", path)
@@ -76,14 +90,113 @@ class ConfigLoader:
         text = _clean_bom(path.read_text(encoding="utf-8"))
         data = yaml.safe_load(text) or {}
 
+        # --- Extract values with support for both formats ---
+        # Profession / candidate level
+        profession = str(data.get("profession", "Go-разработчик"))
+        candidate_level = str(data.get("candidate_level", "junior"))
+        experience_years = data.get("experience_years")
+
+        # Location - support both flat and nested
+        locations = data.get("locations")
+        if locations is None:
+            loc = data.get("location", {})
+            if isinstance(loc, dict):
+                city = loc.get("city", "Санкт-Петербург")
+                country = loc.get("country", "Россия")
+                locations = [city, f"Удалённая работа ({country})"]
+            else:
+                locations = ["Санкт-Петербург", "Удалённая работа"]
+
+        # Work formats - support both flat and nested
+        work_formats_raw = data.get("work_formats")
+        if work_formats_raw is None:
+            wp = data.get("work_preferences", [])
+            work_formats_raw = wp if wp else ["remote", "hybrid"]
+        work_formats = _parse_work_formats(work_formats_raw)
+
+        # Salary - support both flat and nested
+        min_salary = data.get("min_salary_rub_month")
+        if min_salary is None:
+            sal = data.get("salary", {})
+            min_salary = sal.get("minimum", 119000) if isinstance(sal, dict) else 119000
+
+        min_salary_tax_basis = data.get("min_salary_tax_basis")
+        if min_salary_tax_basis is None:
+            sal = data.get("salary", {})
+            min_salary_tax_basis = sal.get("tax_basis", "net") if isinstance(sal, dict) else "net"
+
+        min_salary_period = data.get("min_salary_period")
+        if min_salary_period is None:
+            sal = data.get("salary", {})
+            min_salary_period = sal.get("period", "month") if isinstance(sal, dict) else "month"
+
+        min_salary_is_mandatory = data.get("min_salary_is_mandatory")
+        if min_salary_is_mandatory is None:
+            sal = data.get("salary", {})
+            min_salary_is_mandatory = sal.get("is_mandatory", True) if isinstance(sal, dict) else True
+
+        # DMS - support both formats
+        dms_mode = data.get("dms_mode")
+        if dms_mode is None:
+            dms_cfg = data.get("benefits", {}).get("dms", {}) if isinstance(data.get("benefits"), dict) else {}
+            dms_mode = dms_cfg.get("mode", "prefer")
+        dms_mode = _parse_dms_mode(dms_mode)
+
+        # Language
+        language = str(data.get("language", "ru"))
+        if language == "ru" and "report" in data:
+            language = str(data.get("report", {}).get("language", "ru"))
+
+        # Main currency
+        main_currency_raw = data.get("main_currency")
+        if main_currency_raw is None:
+            sal = data.get("salary", {})
+            main_currency_raw = sal.get("currency", "RUB") if isinstance(sal, dict) else "RUB"
+        main_currency = _parse_currency(main_currency_raw)
+
+        # Search frequency
+        search_frequency = data.get("search_frequency")
+        if search_frequency is None:
+            search_cfg = data.get("search", {})
+            search_frequency = search_cfg.get("frequency", "daily") if isinstance(search_cfg, dict) else "daily"
+
+        # LLM settings
+        llm_provider = data.get("llm_provider")
+        if llm_provider is None:
+            llm_cfg = data.get("llm", {})
+            llm_provider = llm_cfg.get("provider", "ollama") if isinstance(llm_cfg, dict) else "ollama"
+
+        cloud_fallback_enabled = data.get("cloud_fallback_enabled")
+        if cloud_fallback_enabled is None:
+            llm_cfg = data.get("llm", {})
+            cloud_fallback_enabled = llm_cfg.get("cloud_fallback_enabled", False) if isinstance(llm_cfg, dict) else False
+
+        # Additional notes
+        additional_notes = data.get("additional_notes")
+
+        # Contradictions and missing data
+        contradictions = data.get("contradictions", [])
+        missing_data = data.get("missing_data", [])
+
         return CandidateProfile(
-            profession=str(data.get("profession", "Go-разработчик")),
-            locations=data.get("locations", ["Санкт-Петербург", "Удалённая работа"]),
-            work_formats=_parse_work_formats(data.get("work_formats", ["remote", "hybrid"])),
-            min_salary_rub_month=float(data.get("min_salary_rub_month", 119000)),
-            require_dms=bool(data.get("require_dms", True)),
-            language=str(data.get("language", "ru")),
-            main_currency=_parse_currency(data.get("main_currency", "RUB")),
+            profession=profession,
+            candidate_level=candidate_level,
+            experience_years=experience_years,
+            locations=locations,
+            work_formats=work_formats,
+            min_salary_rub_month=float(min_salary),
+            min_salary_tax_basis=min_salary_tax_basis,
+            min_salary_period=min_salary_period,
+            min_salary_is_mandatory=bool(min_salary_is_mandatory),
+            dms_mode=dms_mode,
+            language=language,
+            main_currency=main_currency,
+            search_frequency=search_frequency,
+            llm_provider=llm_provider,
+            cloud_fallback_enabled=cloud_fallback_enabled,
+            additional_notes=additional_notes,
+            contradictions=contradictions,
+            missing_data=missing_data,
         )
 
     def load_scoring_weights(self, path: Path | None = None) -> Dict[str, float]:

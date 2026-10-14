@@ -44,13 +44,20 @@ class BenefitsInfo:
 @dataclass
 class CandidateProfile:
     profession: str = "Go-разработчик"
+    candidate_level: str = "junior"
+    experience_years: Optional[int] = None
     locations: List[str] = field(default_factory=lambda: ["Санкт-Петербург", "Удалённая работа"])
     work_formats: List[WorkFormat] = field(default_factory=lambda: [WorkFormat.REMOTE, WorkFormat.HYBRID])
     min_salary_rub_month: float = 119000.0
-    require_dms: bool = True
+    min_salary_tax_basis: str = "net"
+    min_salary_period: str = "month"
+    min_salary_is_mandatory: bool = True
+    dms_mode: str = "prefer"  # prefer | required
     language: str = "ru"
     main_currency: Currency = Currency.RUB
-    search_frequency: Optional[str] = None
+    search_frequency: Optional[str] = "daily"
+    llm_provider: str = "ollama"
+    cloud_fallback_enabled: bool = False
     additional_notes: Optional[str] = None
     contradictions: List[str] = field(default_factory=list)
     missing_data: List[str] = field(default_factory=list)

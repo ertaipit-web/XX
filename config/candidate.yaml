@@ -1,12 +1,29 @@
-﻿# Профиль кандидата Go-разработчик
-profession: Go-разработчик
-locations:
-  - Санкт-Петербург
-  - Удалённая работа
-work_formats:
-  - remote
-  - hybrid
-min_salary_rub_month: 119000.0
-require_dms: true
-language: ru
-main_currency: RUB
+﻿# Профиль кандидата Go-разработчик (Junior)
+profession: "Go Developer"
+candidate_level: "junior"
+experience_years: null
+location:
+  city: "Санкт-Петербург"
+  country: "Россия"
+work_preferences:
+  - "remote"
+  - "hybrid_spb"
+salary:
+  minimum: 119000
+  currency: "RUB"
+  period: "month"
+  tax_basis: "net"
+  is_mandatory: true
+benefits:
+  dms:
+    mode: "prefer"
+    required: false
+preferences:
+  interesting_technical_work: true
+llm:
+  provider: "ollama"
+  cloud_fallback_enabled: false
+search:
+  frequency: "daily"
+report:
+  language: "ru"

@@ -40,11 +40,65 @@ class VacancyNormalizer:
         if not tax:
             return TaxType.UNKNOWN
         t = str(tax).lower()
-        if "net" in t:
+        if "net" in t or "на руки" in t:
             return TaxType.NET
-        if "gross" in t:
+        if "gross" in t or "до вычета" in t:
             return TaxType.GROSS
         return TaxType.UNKNOWN
+
+    @staticmethod
+    def normalize_period(period: str | None) -> str:
+        """Normalize salary period to standard format."""
+        if not period:
+            return "month"
+        p = str(period).lower()
+        if any(k in p for k in ("month", "месяц", "мес")):
+            return "month"
+        if any(k in p for k in ("year", "год", "годов")):
+            return "year"
+        if any(k in p for k in ("hour", "час", "час.")):
+            return "hour"
+        return "month"
+
+    @staticmethod
+    def convert_to_monthly_net(
+        amount: float,
+        currency: Currency,
+        tax_type: TaxType,
+        period: str,
+    ) -> Optional[float]:
+        """Convert salary to monthly net RUB equivalent.
+
+        Returns None if conversion is not possible (unknown currency/tax/period).
+        """
+        # Period conversion
+        monthly = amount
+        if period == "year":
+            monthly = amount / 12
+        elif period == "hour":
+            # Assume 160 hours/month
+            monthly = amount * 160
+        elif period != "month":
+            return None
+
+        # Currency conversion - NO hardcoded rates, require explicit rate
+        if currency == Currency.RUB:
+            rub = monthly
+        elif currency in (Currency.USD, Currency.EUR):
+            # No hardcoded rates - cannot convert without explicit rate
+            return None
+        else:
+            return None
+
+        # Tax type conversion - NO gross->net without explicit model
+        if tax_type == TaxType.NET:
+            return rub
+        elif tax_type == TaxType.GROSS:
+            # Cannot convert gross to net without documented tax model
+            return None
+        else:
+            # Unknown tax basis - cannot determine net
+            return None
 
 
 class ScoringCalculator:
@@ -59,7 +113,7 @@ class ScoringCalculator:
         Args:
             vacancy: The vacancy to score.
             weights: Optional weight overrides (keys: salary_fit, format_fit, etc.)
-            min_salary_rub: Minimum salary threshold in RUB/month.
+            min_salary_rub: Minimum salary threshold in RUB/month net.
 
         Returns:
             VacancyScore with individual component scores and total.
@@ -109,26 +163,51 @@ class ScoringCalculator:
 
     @staticmethod
     def _score_salary(vacancy: Vacancy, min_salary: float) -> int:
-        """Score salary match (0-100)."""
+        """Score salary match (0-100).
+
+        Logic per problem-definition:
+        - Threshold is 119000 RUB/month NET
+        - If confirmed max < threshold -> NOT_SUITABLE (score 0)
+        - If confirmed min >= threshold -> PASS (score 100)
+        - If range crosses threshold or only max known -> NEEDS_CLARIFICATION (score 50)
+        - Unknown salary -> NEEDS_CLARIFICATION (score 30)
+        - Gross/unknown tax basis cannot auto-pass net threshold
+        """
         salary = vacancy.salary
         if salary.from_amount is None and salary.to_amount is None:
             return 30  # Unknown — medium score, don't penalize too much
 
-        from_amount = salary.from_amount or 0
-        # Convert to RUB if needed (simple approximation)
-        if salary.currency == Currency.USD:
-            from_amount *= 90  # Rough exchange rate
-        elif salary.currency == Currency.EUR:
-            from_amount *= 100
+        # Convert both bounds to monthly net RUB if possible
+        min_net = None
+        max_net = None
 
-        if from_amount >= min_salary * 1.5:
+        if salary.from_amount is not None:
+            min_net = VacancyNormalizer.convert_to_monthly_net(
+                salary.from_amount, salary.currency, salary.tax_type, salary.period
+            )
+        if salary.to_amount is not None:
+            max_net = VacancyNormalizer.convert_to_monthly_net(
+                salary.to_amount, salary.currency, salary.tax_type, salary.period
+            )
+
+        # If we couldn't convert to net RUB (unknown currency/tax/period)
+        if min_net is None and max_net is None:
+            return 50  # Needs clarification - can't determine
+
+        # Use available bounds
+        lower = min_net if min_net is not None else max_net
+        upper = max_net if max_net is not None else min_net
+
+        # If confirmed maximum is below threshold -> NOT_SUITABLE
+        if upper is not None and upper < min_salary:
+            return 0
+
+        # If confirmed minimum meets threshold -> PASS
+        if lower is not None and lower >= min_salary:
             return 100
-        elif from_amount >= min_salary:
-            return 75
-        elif from_amount >= min_salary * 0.8:
-            return 50
-        else:
-            return 20
+
+        # Range crosses threshold or only upper bound known above threshold
+        return 50  # Needs clarification
 
     @staticmethod
     def _score_format(vacancy: Vacancy) -> int:
