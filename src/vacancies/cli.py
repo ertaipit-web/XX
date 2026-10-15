@@ -6,6 +6,7 @@ import argparse
 import logging
 import sys
 from pathlib import Path
+from dataclasses import asdict
 from typing import Optional
 
 from .orchestrator.orchestrator import OrchestratorLimits, VacancyResearchOrchestrator
@@ -155,6 +156,29 @@ def build_parser() -> argparse.ArgumentParser:
     )
     history_parser.add_argument(
         "--limit", type=int, default=10, help="Max runs to list"
+    )
+
+    # interview command
+    interview_parser = subparsers.add_parser(
+        "interview", help="Run interactive adaptive interview for profile completion"
+    )
+    interview_parser.add_argument(
+        "--profile-id",
+        type=str,
+        default="default",
+        help="Profile ID to load or create",
+    )
+    interview_parser.add_argument(
+        "--max-questions",
+        type=int,
+        default=10,
+        help="Maximum number of interview questions",
+    )
+    interview_parser.add_argument(
+        "--role-pack",
+        type=str,
+        default="go_junior",
+        help="Role pack ID for interview questions",
     )
 
     return parser
@@ -333,6 +357,68 @@ def cmd_history(args: argparse.Namespace) -> int:
     return 1
 
 
+def cmd_interview(args: argparse.Namespace) -> int:
+    """Run interactive adaptive interview for candidate profile completion."""
+    from .candidate.profile import CandidateProfile as ExtendedCandidateProfile, CandidateProfileManager
+    from .candidate.interview import AdaptiveInterviewer
+
+    cfg = ConfigLoader(args.config_dir) if args.config_dir else ConfigLoader()
+    manager = CandidateProfileManager()
+
+    profile = manager.load(args.profile_id)
+    if profile is None:
+        base_profile = cfg.load_candidate_profile()
+        profile = ExtendedCandidateProfile(**asdict(base_profile))
+        profile.resume_source = "interview"
+        manager.save(profile, args.profile_id)
+
+    interviewer = AdaptiveInterviewer(profile, role_pack_id=args.role_pack)
+    interviewer.question_bank.set_max_questions(args.max_questions)
+
+    print(
+        f"=== Адаптивное интервью для Junior Go Developer "
+        f"(вопросы: {args.max_questions}, 'skip' = пропустить, 'quit' = выход) ==="
+    )
+
+    try:
+        while not interviewer.is_complete():
+            question = interviewer.get_next_question()
+            if question is None:
+                print("Вопросы закончились.")
+                break
+
+            progress = len(interviewer.session.questions_asked) + 1
+            print(f"\n[{progress}/{args.max_questions}] {question['text']}")
+
+            answer = input("> ")
+
+            if answer.strip().lower() == "quit":
+                break
+            if answer.strip().lower() == "skip":
+                interviewer.skip_question(question["question_id"])
+            else:
+                interviewer.record_answer(question["question_id"], answer)
+                manager.save(profile, args.profile_id)
+    except KeyboardInterrupt:
+        manager.save(profile, args.profile_id)
+        print("\nИнтервью прервано. Прогресс сохранён.")
+        return 0
+
+    profile.interview_completed = True
+    profile.interview_questions_asked = interviewer.session.questions_asked
+    profile.interview_answers = interviewer.session.answers
+    save_path = manager.save(profile, args.profile_id)
+
+    answers_count = len(interviewer.session.answers)
+    skipped_count = len(interviewer.session.skipped_questions)
+    print("\nИнтервью завершено.")
+    print(f"Ответов записано: {answers_count}")
+    print(f"Пропущено: {skipped_count}")
+    print(f"Профиль сохранён: {save_path}")
+
+    return 0
+
+
 def main() -> int:
     """Main CLI entry point."""
     parser = build_parser()
@@ -348,6 +434,8 @@ def main() -> int:
         return cmd_config(args)
     elif args.command == "history":
         return cmd_history(args)
+    elif args.command == "interview":
+        return cmd_interview(args)
     else:
         parser.print_help()
         return 1

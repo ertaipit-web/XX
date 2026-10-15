@@ -10,3 +10,8 @@ data/hh/
 # /reports/hh/
 __pycache__/
 *.py[cod]
+
+# Task 04: runtime/generated artifacts (git status)
+reports/
+history/runs/
+data/candidates/

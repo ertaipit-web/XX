@@ -76,10 +76,13 @@ enabled: true
 # hh.ru API токен (для официального API)
 HH_ACCESS_TOKEN=your_token_here
 
+# SuperJob API ключ (опционально, для официального API)
+SUPERJOB_API_KEY=your_key_here
+
 # Переопределение LLM провайдера (для тестов/CI)
 VACANCIES_LLM_PROVIDER=mock
 
-# Отключить LLM полностью
+# Отключить LLM полностью (детерминированный путь)
 VACANCIES_DISABLE_LLM=1
 ```
 
@@ -108,8 +111,8 @@ rep = orch.run(fixtures=[v])
 
 **Linux/macOS (cron):**
 ```bash
-# Каждый день в 09:00
-0 9 * * * cd /path/to/XX && VACANCIES_LLM_PROVIDER=ollama python -m src.vacancies.cli daily >> logs/daily.log 2>&1
+# Каждый день в 09:00 (детерминированно, без LLM)
+0 9 * * * cd /path/to/XX && VACANCIES_DISABLE_LLM=1 python -m src.vacancies.cli daily >> logs/daily.log 2>&1
 ```
 
 **Windows (Task Scheduler):**
@@ -154,6 +157,7 @@ python -m pytest tests/vacancies/test_llm.py -v
 reports/
 ├── latest.md           # Последний Markdown отчёт
 ├── latest.json         # Последний JSON отчёт
+├── career_report.md    # Task 04: рыночная статистика, матрица пробелов, план обучения (без PII)
 ├── runs/
 │   ├── <run_id>.md     # История запусков
 │   └── <run_id>.json
@@ -161,6 +165,8 @@ history/
 ├── index.json          # Индекс запусков
 └── runs/
     └── <run_id>.json   # Полные данные запуска
+data/candidates/
+└── <profile_id>.json    # Локальный профиль кандидата (никогда не коммитится)
 ```
 
 ## Диагностика

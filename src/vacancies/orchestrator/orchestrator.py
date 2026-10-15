@@ -12,6 +12,9 @@ from typing import Any, Callable, Dict, List, Optional
 from ..core.contracts import AgentResult, ResearchRun, VacancyReport
 from ..core.models import CandidateProfile, SearchQuery, Vacancy
 from ..go_agents.agents import CareerIntakeAgent, VacancyDiscoveryAgent
+from ..market.analyzer import MarketAnalyzer
+from ..candidate.gap_analysis import GapAnalyzer
+from ..role_pack.registry import RolePackRegistry
 from ..go_agents.specialists import (
     CareerFitAnalyst,
     CompensationBenefitsAgent,
@@ -288,6 +291,19 @@ class VacancyResearchOrchestrator:
             run.metadata.setdefault("qa_issues", []).extend(issues)
             self.dedup.run(vacancies, weights=weights, min_salary=min_salary)
 
+        # --- 8b. Task 04: separate cohorts, market stats, gap analysis ---
+        eligible, market_sample = self._separate_eligible(vacancies, active_profile)
+        run.metadata["eligible_vacancies"] = len(eligible)
+        run.metadata["market_sample_vacancies"] = len(market_sample)
+
+        market_result = self._run_market_analysis(vacancies, eligible)
+        run.metadata["market_analysis"] = market_result
+
+        gap_result = self._run_gap_analysis(active_profile, market_result.get("market_stats", []))
+        run.metadata["gap_analysis"] = gap_result
+        report.candidate_improvements = list(gap_result.get("learning_plan", []) or [])
+        report.recommendations = list(gap_result.get("interview_prep", []) or [])
+
         if write_reports:
             VacancyReportWriter.write_json(report, output_dir / "latest.json")
             VacancyReportWriter.write_markdown(report, output_dir / "latest.md")
@@ -295,6 +311,9 @@ class VacancyResearchOrchestrator:
             run_dir.mkdir(parents=True, exist_ok=True)
             VacancyReportWriter.write_json(report, run_dir / f"{run_id}.json")
             VacancyReportWriter.write_markdown(report, run_dir / f"{run_id}.md")
+
+            # Task 04 career-intelligence report
+            self._write_career_report(report, market_result, gap_result, eligible, output_dir)
 
             # --- 9. Save to history and detect new/changed vacancies ---
             history = RunHistory()
@@ -322,6 +341,271 @@ class VacancyResearchOrchestrator:
         except Exception as e:  # noqa: BLE001
             logger.warning("Parallel agent %s failed: %s", name, e)
             return {"agent": name, "success": False, "errors": [str(e)]}
+
+    # ------------------------------------------------------------------
+    # Task 04: Market intelligence, gap analysis, career report
+    # ------------------------------------------------------------------
+
+    def _run_market_analysis(
+        self, vacancies: List[Vacancy], eligible: List[Vacancy]
+    ) -> Dict[str, Any]:
+        """Run deterministic market skill intelligence on the deduplicated corpus."""
+        try:
+            analyzer = MarketAnalyzer(role_pack_id="go_junior")
+            result = analyzer.analyze(vacancies, eligible_vacancies=eligible)
+            stats = [
+                {
+                    "skill_id": s.get("skill_id"),
+                    "skill_name": s.get("skill_name"),
+                    "category": s.get("category"),
+                    "total_vacancies": s.get("total_vacancies"),
+                    "total_employers": s.get("total_employers"),
+                    "explicit_required": s.get("explicit_required", 0),
+                    "explicit_preferred": s.get("explicit_preferred", 0),
+                    "mentioned": s.get("mentioned", 0),
+                    "inferred": s.get("inferred", 0),
+                    "percentage_of_vacancies": s.get("percentage_of_vacancies", 0.0),
+                    "percentage_of_employers": s.get("percentage_of_employers", 0.0),
+                    "evidence": s.get("evidence", []),
+                }
+                for s in result.skill_stats
+            ]
+            return {
+                "market_stats": stats,
+                "eligible_count": result.eligible_vacancy_count,
+                "market_sample_count": result.market_sample_vacancy_count,
+                "total_unique_vacancies": result.total_unique_vacancies,
+                "total_unique_employers": result.total_unique_employers,
+                "limitations": result.limitations,
+            }
+        except Exception as e:  # noqa: BLE001
+            logger.warning("Market analysis failed: %s", e)
+            return {
+                "market_stats": [],
+                "eligible_count": len(eligible),
+                "market_sample_count": len(vacancies) - len(eligible),
+                "total_unique_vacancies": len(vacancies),
+                "total_unique_employers": 0,
+                "limitations": [f"market analysis error: {e}"],
+            }
+
+    def _run_gap_analysis(self, profile: CandidateProfile, market_stats: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Run deterministic gap analysis between candidate profile and market evidence."""
+        try:
+            analyzer = GapAnalyzer(role_pack_id="go_junior")
+            result = analyzer.analyze(profile, market_stats)
+            return result
+        except Exception as e:  # noqa: BLE001
+            logger.warning("Gap analysis failed: %s", e)
+            return {
+                "skill_gaps": [],
+                "learning_plan": [],
+                "interview_prep": [],
+                "summary": {"error": str(e)},
+            }
+
+    def _separate_eligible(
+        self, vacancies: List[Vacancy], profile: CandidateProfile
+    ) -> tuple[List[Vacancy], List[Vacancy]]:
+        """Split vacancies into candidate-eligible vs broader market sample.
+
+        Eligible = status suitable or needs_clarification (mandatory criteria
+        satisfied or unknown, not explicitly disqualifying).
+        Market sample = everything else — kept for skill-frequency evidence.
+        """
+        eligible: List[Vacancy] = []
+        market_sample: List[Vacancy] = []
+        for v in vacancies:
+            st = v.status.value if hasattr(v.status, "value") else str(v.status)
+            if st in ("suitable", "needs_clarification"):
+                eligible.append(v)
+            else:
+                market_sample.append(v)
+        return eligible, market_sample
+
+    def _write_career_report(
+        self,
+        report: VacancyReport,
+        market_result: Dict[str, Any],
+        gap_result: Dict[str, Any],
+        eligible: List[Vacancy],
+        output_dir: Path,
+    ) -> None:
+        """Write the Task 04 career-intelligence Markdown report."""
+        try:
+            path = output_dir / "career_report.md"
+            path.parent.mkdir(parents=True, exist_ok=True)
+            run = report.run
+            lines: List[str] = []
+            lines.append("# Отчёт карьерного ассистента — Junior Go Developer")
+            lines.append("")
+            lines.append(f"- Дата запуска: {run.started_at.isoformat() if run.started_at else '—'}")
+            lines.append(f"- Run ID: {run.run_id}")
+            lines.append(f"- Источники: {run.metadata.get('source_status', {})}")
+
+            lines.append("")
+            lines.append("## 1. Статус источников")
+            statuses = run.metadata.get("source_status", {})
+            if statuses:
+                lines.append("| Источник | Статус | Примечание |")
+                lines.append("|---|---|---|")
+                for name, st in statuses.items():
+                    lines.append(f"| {name} | {st.get('integration_type', '—')} | {st.get('status', '—')} |")
+            else:
+                lines.append("Источники не настроены или недоступны.")
+
+            lines.append("")
+            lines.append("## 2. Новые/изменённые вакансии")
+            changes = run.metadata.get("vacancy_changes", {})
+            lines.append(f"- Новых: {changes.get('new', []) if isinstance(changes, dict) else run.metadata.get('vacancy_changes', {}).get('new_count', '-')}")
+            lines.append(f"- Всего найдено: {run.vacancies_found}")
+            lines.append(f"- Уникальных после дедупликации: {run.vacancies_unique}")
+
+            lines.append("")
+            lines.append("## 3. Лучшие подходящие вакансии")
+            if report.best_vacancies:
+                for v in report.best_vacancies[:8]:
+                    lines.append(f"- **{v.title}** — {v.employer or '-'}: {v.source_url}")
+            else:
+                lines.append("Нет подходящих вакансий в текущем наборе.")
+
+            lines.append("")
+            lines.append("## 4. Требуют уточнения")
+            if report.needs_clarification:
+                for v in report.needs_clarification[:8]:
+                    lines.append(f"- {v.title} ({v.employer or '-'}) — {v.source_url}")
+            else:
+                lines.append("Нет вакансий, требующих уточнения.")
+
+            lines.append("")
+            lines.append("## 5. Рыночная статистика навыков")
+            lines.append(f"- Уникальных вакансий (корпус): {market_result.get('total_unique_vacancies', 0)}")
+            lines.append(f"- Уникальных работодателей: {market_result.get('total_unique_employers', 0)}")
+            lines.append(f"- Вакансий подходящих кандидату: {market_result.get('eligible_count', len(eligible))}")
+            lines.append(f"- Вакансий в рыночном сэмпле: {market_result.get('market_sample_count', 0)}")
+            stats = market_result.get("market_stats", [])
+            if stats:
+                lines.append("")
+                lines.append("| Навык | Категория | Вакансий | % вакансий | Требуется | Желательно | Упомянуто |")
+                lines.append("|---|---|---|---|---|---|---|")
+                for s in sorted(stats, key=lambda x: x.get("total_vacancies", 0), reverse=True)[:20]:
+                    lines.append(
+                        f"| {s.get('skill_name','—')} | {s.get('category','—')} | "
+                        f"{s.get('total_vacancies',0)} | {s.get('percentage_of_vacancies',0.0)}% | "
+                        f"{s.get('explicit_required',0)} | {s.get('explicit_preferred',0)} | {s.get('mentioned',0)} |"
+                    )
+            else:
+                lines.append("Статистика навыков недоступна.")
+
+            lines.append("")
+            lines.append("## 6. Целевой профиль навыков (рынок)")
+            role_pack = self._load_role_pack()
+            if role_pack:
+                core = role_pack.get_mandatory_skills()
+                preferred = role_pack.get_preferred_skills()
+                lines.append(f"- Обязательные (core) навыки: {len(core)} ({', '.join(s.name for s in core)})")
+                lines.append(f"- Предпочтительные навыки: {len(preferred)} ({', '.join(s.name for s in preferred)})")
+            else:
+                lines.append("Роль-пакет не загружен.")
+
+            lines.append("")
+            lines.append("## 7. База кандидата (без персональных данных)")
+            profile = report.run.profile
+            if profile is not None:
+                skill_count = len(profile.skills) if hasattr(profile, "skills") else "—"
+                lines.append(f"- Профессия: {profile.profession}")
+                lines.append(f"- Уровень: {profile.candidate_level}")
+                lines.append(f"- Опыт (лет): {profile.experience_years or 'не указан'}")
+                lines.append(f"- Минимальная зарплата (net/мес): {profile.min_salary_rub_month}")
+                lines.append(f"- География/формат: {', '.join(profile.locations)}; {', '.join(f.value for f in profile.work_formats)}")
+                lines.append(f"- DMS: {profile.dms_mode}")
+                lines.append(f"- Навыков в профиле: {skill_count}")
+            else:
+                lines.append("Профиль кандидата не передан.")
+
+            lines.append("")
+            lines.append("## 8. Матрица пробелов в навыках")
+            skill_gaps = gap_result.get("skill_gaps", []) or []
+            if skill_gaps:
+                lines.append("| Навык | Важность | Статус | Доля пробела | Рекомендация |")
+                lines.append("|---|---|---|---|---|")
+                for g in skill_gaps[:20]:
+                    gap_type = getattr(g, "gap_type", "") if not isinstance(g, dict) else g.get("gap_type", "")
+                    if gap_type in ("confirmed_gap", "needs_assessment"):
+                        name = getattr(g, "skill_name", "") if not isinstance(g, dict) else g.get("skill_name", "—")
+                        imp = getattr(g, "target_importance", "") if not isinstance(g, dict) else g.get("target_importance", "—")
+                        status = getattr(g, "evidence_status", "") if not isinstance(g, dict) else g.get("evidence_status", "—")
+                        rec = getattr(g, "recommended_action", "") if not isinstance(g, dict) else g.get("recommended_action", "—")
+                        lines.append(f"| {name} | {imp} | {status} | {gap_type} | {rec} |")
+            else:
+                lines.append("Анализ пробелов недоступен.")
+
+            summary = gap_result.get("summary", {})
+            lines.append(f"- Ядро с пробелами: {summary.get('core_gaps', 0)}")
+            lines.append(f"- Частые с пробелами: {summary.get('frequent_gaps', 0)}")
+            lines.append(f"- Совпадает с целевым: {summary.get('ready_skills', 0)}")
+
+            lines.append("")
+            lines.append("## 9. План обучения и подготовка к интервью")
+            learning_plan = gap_result.get("learning_plan", []) or []
+            interview_prep = gap_result.get("interview_prep", []) or []
+            if learning_plan:
+                lines.append("### План обучения")
+                for item in learning_plan[:10]:
+                    if isinstance(item, dict):
+                        lines.append(f"- **Приоритет {item.get('priority', '?')}**: {item.get('skill_name', '—')}")
+                        effort = item.get("estimated_effort_hours", 0)
+                        lines.append(f"  - Оценка усилий: {effort} ч")
+                        outcome = item.get("learning_outcome", "")
+                        if outcome:
+                            lines.append(f"  - Исход: {outcome}")
+                        practical = item.get("practical_exercise")
+                        if practical:
+                            lines.append(f"  - Практика: {practical}")
+                    lines.append("")
+            else:
+                lines.append("План обучения не создан.")
+
+            if interview_prep:
+                lines.append("### Подготовка к интервью")
+                for item in interview_prep[:10]:
+                    if isinstance(item, dict):
+                        lines.append(f"- **{item.get('skill_name', '—')}**")
+                        for q in item.get("questions", [])[:3]:
+                            qtext = q.get("question", "—") if isinstance(q, dict) else str(q)
+                            lines.append(f"  - {qtext}")
+                    lines.append("")
+            else:
+                lines.append("Вопросы для интервью не созданы.")
+
+            lines.append("")
+            lines.append("## 10. Ограничения и непройденные этапы")
+            ml = run.metadata.get("limitations", [])
+            if isinstance(ml, list):
+                for lim in ml:
+                    lines.append(f"- {lim}")
+            for lim in market_result.get("limitations", []):
+                lines.append(f"- market: {lim}")
+            for err in run.errors:
+                lines.append(f"- Ошибка выполнения: {err}")
+
+            path.write_text("\n".join(lines), encoding="utf-8")
+        except Exception as e:  # noqa: BLE001
+            logger.warning("Career report write failed: %s", e)
+            report.run.errors.append(f"career_report: {e}")
+
+    def _load_role_pack(self) -> Optional[Any]:
+        """Load the Go Junior role pack without hard dependency at init."""
+        try:
+            registry = RolePackRegistry()
+            pack = registry.load("go_junior")
+            if pack is not None:
+                return pack
+            return registry._builtin_packs.get("go_junior")
+        except Exception:  # noqa: BLE001
+            from ..role_pack.go_junior import GO_JUNIOR_ROLE_PACK
+
+            return GO_JUNIOR_ROLE_PACK
 
     def _populate_report(
         self, report: VacancyReport, vacancies: List[Vacancy], profile: CandidateProfile

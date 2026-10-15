@@ -9,13 +9,21 @@ Workspace custom agent and a dependency-free Python CLI for collecting vacancy d
 
 Возможности:
 
-- поиск вакансий через публичный scraping hh.ru (без API-токена, curl_cffi TLS fingerprint);
+- поиск вакансий через официальный hh.ru API (OAuth) и опциональный public scraping (curl_cffi TLS fingerprint);
 - профиль кандидата и веса рейтинга в YAML (`config/`);
 - детерминированный рейтинг по критериям ТЗ;
 - разделение «подходят» / «требуют уточнения» / «не подходят»;
 - защита от prompt injection в описаниях вакансий;
 - отчёты в Markdown и JSON с историей запусков;
-- работа без API-ключей на фикстурах.
+- работа без API-ключей на фикстурах;
+- **карьерный ассистент (Task 04):**
+  - парсинг резюме (TXT/MD/PDF/DOCX) + локальное хранилище профиля;
+  - универсенные Role Packs (первый — `go_junior`, 22 навыка);
+  - рыночная статистика навыков по двум датасетам (подходящие кандидату + рыночный сэмпл);
+  - матрица пробелов в навыках и приоритетный план обучения/интервью;
+  - дедупликация по 3 этапам (URL canonicalization → exact → fuzzy);
+  - адаптеры для hh.ru, SuperJob, Rabota.ru, Habr Career (все без токена — mock/fixture);
+  - локальный отчёт `reports/career_report.md` без персональных данных.
 
 ### Быстрый старт
 
@@ -36,7 +44,8 @@ python tools/hh_vacancies.py --report --report-source fixture --fixture tests/fi
 python tools/hh_vacancies.py --report --report-source hh --text "Go разработчик" --scrape-delay 8
 ```
 
-Результаты: `reports/latest.md`, `reports/latest.json`, `reports/runs/<run_id>.*`.
+Результаты: `reports/latest.md`, `reports/latest.json`, `reports/runs/<run_id>.*`,
+`reports/career_report.md` (рыночная статистика + пробелы + план обучения).
 
 Документация: [docs/architecture.md](docs/architecture.md),
 [docs/agents.md](docs/agents.md), [docs/operations.md](docs/operations.md).

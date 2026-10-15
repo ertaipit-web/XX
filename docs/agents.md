@@ -158,6 +158,31 @@
 
 ---
 
+## 10. Career Intelligence (Task 04)
+
+Не LLM-агент, а детерминированный этап оркестратора (`orchestrator.py` §8b), использующий:
+
+| Компонент | Файл | Ответственность |
+|----------|------|-----------------|
+| `MarketAnalyzer` | `market/analyzer.py` | Статистика навыков по двум датасетам |
+| `GapAnalyzer` | `candidate/gap_analysis.py` | Матрица пробелов + план обучения + интервью |
+| `ResumeParser` | `candidate/resume_parser.py` | Парсинг резюме (TXT/MD/PDF/DOCX) |
+| `CandidateProfileManager` | `candidate/profile.py` | Локальное хранилище профиля |
+| `InterviewQuestionBank` | `candidate/interview.py` | Целевые вопросы для intake |
+| `Deduplicator` | `deduplication/deduplicator.py` | URL canonicalization → exact → fuzzy |
+| `RolePackRegistry` | `role_pack/registry.py` | Загрузка role pack |
+| `GO_JUNIOR_ROLE_PACK` | `role_pack/go_junior.py` | 22 навыка для Junior Go Developer |
+
+**Поведение:**
+- После дедупликации вакансии разбиваются на `candidate_eligible_vacancies` (status `suitable` или `needs_clarification`) и `role_market_sample` (остальные, для оценки спроса на навыки).
+- `MarketAnalyzer` извлекает навыки по `GO_JUNIOR_ROLE_PACK`, считает: количество и % уникальных вакансий, количество уникальных работодателей, breakdown по required/preferred/mentioned/inferred, evidence-ссылки. Denominator — уникальные канонические вакансии.
+- `GapAnalyzer` сравнивает профиль кандидата с рыночными статами → `skill_gaps` (gap_type: `confirmed_gap`/`needs_assessment`/`matches_target`/`not_relevant`/`unknown`), `learning_plan`, `interview_prep`. Отсутствие доказательств навыка → `needs_assessment` (не invented), а не `confirmed_gap`.
+- `career_report.md` пишется в `reports/` с секциями: статус источников, новые/изменённые вакансии, лучшие вакансии, рыночная статистика навыков, целевой профиль, база кандидата (без PII), матрица пробелов, план обучения, интервью, ограничения.
+
+**LLM:** используется только если `llm_provider != mock` и Ollama доступен. Без LLM весь pipeline работает детерминированно.
+
+---
+
 ## Контракты данных
 Все модели в `src/vacancies/core/models.py`:
 - `CandidateProfile` — профиль (junior, 119k net, remote/hybrid, dms_mode)

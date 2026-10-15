@@ -14,11 +14,12 @@
   3. **Sanitize** — санитизация недоверенного текста (prompt injection защита)
   4. **Verify** — проверка источников, evidence extraction
   5. **Analysis** — параллельный запуск Tech/Comp/Fit агентов
-  5. **Dedup/Rank** — дедупликация, скоринг, статусы
-  6. **Report** — формирование Markdown + JSON
-  7. **LLM Enrichment** — опциональное обогащение карточек
-  8. **QA** — проверка + ограниченный fix-loop (max 2 итерации)
-  9. **History** — сохранение, детекция новых/изменённых вакансий
+  6. **Dedup/Rank** — дедупликация, скоринг, статусы
+  7. **Report** — формирование Markdown + JSON
+  8. **LLM Enrichment** — опциональное обогащение карточек
+  9. **QA** — проверка + ограниченный fix-loop (max 2 итерации)
+  10. **History** — сохранение, детекция новых/изменённых вакансий
+- **Task 04 (8b)** — разделение вакансий на eligible vs market sample, рыночная статистика навыков, gap-анализ, план обучения/интервью, `career_report.md`
 
 ### Agents (`src/vacancies/go_agents/`)
 | Агент | Ответственность | LLM |
@@ -33,6 +34,17 @@
 | QualityAssuranceAgent | Валидация отчёта, fix-loop | Нет |
 | ReportWriterAgent | LLM-обогащение карточек | Да (опционально) |
 
+### Career intelligence (`src/vacancies/candidate/`, `src/vacancies/market/`, `src/vacancies/role_pack/`, `src/vacancies/deduplication/`)
+| Модуль | Ответственность | LLM |
+|-------|----------------|-----|
+| `candidate/resume_parser.py` | Парсинг резюме (TXT/MD/PDF/DOCX) | Нет |
+| `candidate/profile.py` | CandidateProfile, SkillEvidence, SkillGap, локальное хранилище | Нет |
+| `candidate/interview.py` | InterviewQuestionBank, AdaptiveInterviewer (целевые вопросы) | Нет |
+| `candidate/gap_analysis.py` | GapAnalyzer — матрица пробелов, план обучения, подготовка к интервью | Нет |
+| `role_pack/go_junior.py`, `registry.py` | RolePack abstraction + go_junior (22 навыка) | Нет |
+| `market/analyzer.py` | MarketAnalyzer — рыночная статистика навыков (два датасета) | Нет |
+| `deduplication/deduplicator.py` | Deduplicator — URL canonicalization → exact → fuzzy | Нет |
+
 ### Adapters (`src/vacancies/adapters/`)
 | Адаптер | Источник | Статус |
 |---------|----------|--------|
@@ -40,6 +52,9 @@
 | `HabrAdapter` | habr.com Career API | Mock (готов к интеграции) |
 | `GenericJSONFeedAdapter` | Любой JSON-фид | Рабочий |
 | `MultiSourceAdapter` | Координация нескольких источников | Рабочий |
+| `SuperJobAdapter` | SuperJob API (требует `SUPERJOB_API_KEY`) | Интерфейс + mock, blocked_by_credentials |
+| `RabotaRuAdapter` | Rabota.ru API (требует токен) | Интерфейс + mock, blocked_by_credentials |
+| `HabrCareerAdapter` | Habr Career | Mock по умолчанию |
 
 **Интерфейс `SourceAdapter` (base.py):**
 - `search(query: SearchQuery) -> List[Vacancy]`
@@ -102,9 +117,26 @@ LLM ReportWriter (опционально)
     ↓
 QA (loop max 2 iter) → fix if needed
     ↓
+Task 04 career intelligence:
+  • _separate_eligible: suitable/needs_clarification → candidate_eligible;
+    остальные → role_market_sample
+  • MarketAnalyzer.analyze → skill stats (denominators: уник. вакансий/работодателей)
+  • GapAnalyzer.analyze → skill_gaps + learning_plan + interview_prep
+  • CandidateProfileManager (local only) ← resume_parser / interview intake
+  • reports/career_report.md (market + gaps + plan, без PII)
+    ↓
 RunHistory.save_run() + NewVacancyDetector.detect()
     ↓
-Reports: latest.md/.json + runs/<run_id>.* + history/runs/
+Reports: latest.md/.json + runs/<run_id>.* + history/runs/ + career_report.md
+```
+```
+
+### Архитектурные принципы Task 04
+- **Детерминизм:** salary parsing, dedup, counters, percentages — чистый Python, без LLM.
+- **LLM только там, где нужно интерпретировать текст:** intake, technical/career-fit enrichment, report summary. Всегда есть heuristic fallback.
+- **Локально:** candidate profile в `data/candidates/*.json`, никогда не отправляется во внешние источники.
+- **Два датасета рынка:** `candidate_eligible_vacancies` (рекомендованы кандидату) ⊂/≠ `role_market_sample` (для оценки навыков). Никогда не смешиваются в выводе как рекомендации.
+- **Не выдумывать:** отсутствие данных ≠ навык = 0. `needs_assessment`/`not_relevant`/`unknown`.
 ```
 
 ## Безопасность

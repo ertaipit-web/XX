@@ -14,20 +14,6 @@ from .base import SourceAdapter
 
 logger = logging.getLogger(__name__)
 
-# Mock/public API for a second source (e.g., Habr Career, SuperJob, or generic JSON feed)
-# This can be replaced with a real API integration
-
-PUBLIC_SOURCES = {
-    "habr": {
-        "base_url": "https://career.habr.com/vacancies",
-        "search_params": {"q": "", "type": "all"},
-    },
-    "superjob": {
-        "base_url": "https://api.superjob.ru/2.0/vacancies",
-        "search_params": {"keyword": "", "town": 4},  # 4 = SPb
-    },
-}
-
 
 class GenericJSONFeedAdapter(SourceAdapter):
     """Adapter for generic JSON vacancy feeds (RSS, custom APIs, etc.)."""
@@ -146,32 +132,6 @@ class GenericJSONFeedAdapter(SourceAdapter):
         return WorkFormat.UNKNOWN
 
 
-class HabrAdapter(SourceAdapter):
-    """Adapter for Habr Career (mock implementation for testing)."""
-
-    @property
-    def source_name(self) -> str:
-        return "habr.com"
-
-    def __init__(self) -> None:
-        pass
-
-    def search(self, query: "SearchQuery") -> List[Vacancy]:
-        # Mock implementation - in production, use Habr API
-        logger.info("Habr adapter: mock search for %s", query.text)
-        return []
-
-    def fetch_details(self, vacancy: Vacancy) -> Vacancy:
-        return vacancy
-
-    def get_source_status(self) -> Dict[str, Any]:
-        return {
-            "source": self.source_name,
-            "available": False,
-            "limitations": ["Requires Habr Career API access - mock implementation"],
-        }
-
-
 class MultiSourceAdapter:
     """Orchestrates multiple source adapters."""
 
@@ -191,3 +151,47 @@ class MultiSourceAdapter:
 
     def get_all_statuses(self) -> Dict[str, Dict[str, Any]]:
         return {name: adapter.get_source_status() for name, adapter in self.adapters.items()}
+
+
+def create_default_multi_adapter() -> "MultiSourceAdapter":
+    """Create multi-source adapter with all available adapters."""
+    from .hh_adapter import HHAdapter
+    from .habr_adapter import HabrAdapter
+    from .habr_career_adapter import HabrCareerAdapter
+    from .superjob_adapter import SuperJobAdapter
+    from .rabota_ru_adapter import RabotaRuAdapter
+
+    adapters: List[SourceAdapter] = []
+
+    # Always add HH adapter (official API + scraping fallback)
+    try:
+        adapters.append(HHAdapter())
+    except Exception as e:
+        logger.warning("Failed to initialize HHAdapter: %s", e)
+
+    # Add Habr Career adapter (mock by default, real if token provided)
+    try:
+        adapters.append(HabrCareerAdapter())
+    except Exception as e:
+        logger.warning("Failed to initialize HabrCareerAdapter: %s", e)
+
+    # Add SuperJob adapter (requires credentials)
+    try:
+        adapters.append(SuperJobAdapter())
+    except Exception as e:
+        logger.warning("Failed to initialize SuperJobAdapter: %s", e)
+
+    # Add Rabota.ru adapter (requires token)
+    try:
+        adapters.append(RabotaRuAdapter())
+    except Exception as e:
+        logger.warning("Failed to initialize RabotaRuAdapter: %s", e)
+
+    # Add legacy Habr adapter for backward compat
+    try:
+        from .habr_adapter import HabrAdapter
+        adapters.append(HabrAdapter())
+    except Exception as e:
+        logger.warning("Failed to initialize HabrAdapter: %s", e)
+
+    return MultiSourceAdapter(adapters)
