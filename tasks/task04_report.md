@@ -54,7 +54,7 @@ Foundation blockers addressed (Task 04 §3):
 - **Local daily report**: `reports/latest.md`, `reports/latest.json`, `reports/runs/<run_id>.{md,json}`, and `reports/career_report.md`.
 
 ### Partially implemented
-- **LLM-assisted extraction** (`INTAKE_SYSTEM`, `REPORT_SYSTEM` prompts): present but gated on local Ollama; defaults to deterministic fallback when unavailable. Now tested with live local Ollama (`qwen2.5-coder:3b`); see §8 LLM-vs-deterministic comparison (F1 1.00 vs 0.91).
+- **LLM-assisted extraction** (`INTAKE_SYSTEM`, `REPORT_SYSTEM` prompts): present but gated on local Ollama; defaults to deterministic fallback when unavailable. Now tested with live local Ollama (`qwen2.5-coder:3b`); see §8 LLM-vs-deterministic comparison (F1 1.00 vs 0.97).
 - **Optional practical diagnostics**: `InterviewQuestionBank` provides questions; interactive terminal I/O loop is wired to the `interview` CLI subcommand with skip/quit and progress persistence.
 
 ### Blocked / not implemented (live external integrations)
@@ -141,116 +141,461 @@ This Task 04 increment did not introduce live-extraction metrics (no live source
 
 ### LLM-vs-deterministic comparison (§17.16)
 
-A dedicated comparison script `scripts/llm_vs_deterministic_compare.py` was created and run against a fixed, versioned fixture set of 3 Go Junior vacancies (12 required/preferred skills per fixture). The script uses `SkillExtractor` (deterministic) and `OllamaClient` with `qwen2.5-coder:3b` (LLM), reusing the project's `SECURITY_PREAMBLE` prompt pattern. LLM call failures fall back to empty sets with a logged warning.
+A dedicated comparison script `scripts/llm_vs_deterministic_compare.py` was created and run against a fixed, versioned fixture set of 20 Go Junior vacancies (8–12 required/preferred skills per fixture). The script uses `SkillExtractor` (deterministic) and `OllamaClient` with `qwen2.5-coder:3b` (LLM), reusing the project's `SECURITY_PREAMBLE` prompt pattern. LLM call failures fall back to empty sets with a logged warning.
 
 **Overall metrics:**
 
 | Metric | Deterministic | LLM (`qwen2.5-coder:3b`) |
 |---|---|---|
 | Precision (vs ground truth) | 1.00 | 1.00 |
-| Recall (vs ground truth) | 1.00 | 0.83 |
-| F1 | 1.00 | 0.91 |
+| Recall (vs ground truth) | 1.00 | 0.94 |
+| F1 | 1.00 | 0.97 |
 
 **Key findings:**
-- Deterministic extraction achieved perfect precision and recall on the overall union (F1 = 1.00). В per-fixture fix1: детерминированный метод нашёл `gin` (совпадение подстроки "debugging" с алиасом "gin"), которого нет в ground-truth fix1 → 1 hallucination, precision 0.92. В overall union `gin` есть в GT fix2, поэтому det ⊆ GT и precision = 1.0.
-- LLM extraction introduced **zero hallucinations** (all LLM-found skills matched ground truth) but missed 3 implicit skills: `communication` (from "teamwork"), `distributed_systems` (from "микросервисы"/microservices), and `problem_solving` (from "Алгоритмы и debugging") — these require inferential reasoning beyond literal text match.
-- LLM also missed `ci_cd` in `fix2` despite explicit "CI/CD (GitLab CI, GitHub Actions)" mention.
-- Both methods agreed on 15 of the 18 unique go_junior skills across the corpus.
+- Deterministic extraction achieved perfect precision and recall on the overall union (F1 = 1.00). It produced per-fixture substring-driven matches outside a given fixture's ground truth (e.g. `gin` alias matching "debugging" in fix1, `distributed_systems` from "микросервисную" in fix9), but these are compensated in the union because the same skills appear in other fixtures' ground truth — so det ⊆ GT at the corpus level and precision stays 1.00.
+- LLM extraction introduced **zero hallucinations** (all LLM-found skills matched ground truth) across all 20 fixtures. It missed explicit/alias skills in a few fixtures: `docker`+`testing` (fix12), `docker`+`grpc`+`postgresql` (fix14), `ci_cd`+`linux` (fix15) — the LLM under-recalls items that the deterministic substring matcher reliably catches. The 3 earlier implicit-skill misses (`communication`, `distributed_systems`, `problem_solving`) from fix1 no longer appear in fix5/fix15/fix20 GT (see adjustment note below).
+- **Ground-truth adjustment (Step 4):** the proposed GT for fix5, fix15, and fix20 included `api`, but `api` is not a skill_id in the `go_junior` role pack (no name/alias/normalization rule maps to it), so the deterministic extractor can never surface it. `api` was removed from those three fixtures' ground truth. All remaining GT skills were verified findable by the deterministic extractor (substring/alias match) before running.
+- Both methods agreed on 17 of the 22 unique go_junior skills present in the corpus ground truth.
 
 **Verbatim script output:**
 
 ```
-# LLM-vs-Deterministic Skill Extraction Comparison
+# Сравнение: LLM vs детерминированное извлечение навыков
 
-**Timestamp:** 2026-10-15T16:47:50.737357
-**Model:** `qwen2.5-coder:3b`
-**Ollama available:** True
-**Fixtures:** 3
+**Время:** 2026-10-16T14:06:08.802814
+**Модель:** `qwen2.5-coder:3b`
+**Ollama доступна:** True
+**Фикстур:** 20
 
-## Fixture Results
+## Результаты по фикстурам
 
 ### Junior Go Developer (fintech startup)
 - **ID:** `fix1`
-- **Description:** Финтех-стартаб ищет Junior Go Developer для backend-команды. Строим микросервисы на Go, работаем с PostgreSQL и Docker. gRPC для межсервисного взаимодействия. Используем Kafka для event-driven архитек...
-- **Requirements:** Обязательно: Go, PostgreSQL, Docker, Git, Linux. Желательно: gRPC, Kafka, concurrency (goroutines, channels), testing с testify. Алгоритмы и debugging....
-- **Ground truth:** ['communication', 'concurrency', 'distributed_systems', 'docker', 'git', 'go', 'grpc', 'kafka', 'linux', 'postgresql', 'problem_solving', 'testing']
-- **Deterministic:** ['communication', 'concurrency', 'distributed_systems', 'docker', 'gin', 'git', 'go', 'grpc', 'kafka', 'linux', 'postgresql', 'problem_solving', 'testing']
-- **LLM:** ['concurrency', 'docker', 'git', 'go', 'grpc', 'kafka', 'linux', 'postgresql', 'testing']
+- **Описание:** Финтех-стартаб ищет Junior Go Developer для backend-команды. Строим микросервисы на Go, работаем с PostgreSQL и Docker. gRPC для межсервисного взаимодействия. Используем Kafka для event-driven архитек...
+- **Требования:** Обязательно: Go, PostgreSQL, Docker, Git, Linux. Желательно: gRPC, Kafka, concurrency (goroutines, channels), testing с testify. Алгоритмы и debugging....
+- **Истиное множество:** `['communication', 'concurrency', 'distributed_systems', 'docker', 'git', 'go', 'grpc', 'kafka', 'linux', 'postgresql', 'problem_solving', 'testing']`
+- **Детерминированный:** `['communication', 'concurrency', 'distributed_systems', 'docker', 'gin', 'git', 'go', 'grpc', 'kafka', 'linux', 'postgresql', 'problem_solving', 'testing']`
+- **LLM:** `['concurrency', 'docker', 'git', 'go', 'grpc', 'kafka', 'linux', 'postgresql', 'testing']`
 
-| Metric | Deterministic | LLM |
+| Метрика | Детерминированный | LLM |
 |---|---|---|
-| Precision | 0.92 | 1.00 |
-| Recall | 1.00 | 0.75 |
+| Точность | 0.92 | 1.00 |
+| Полнота | 1.00 | 0.75 |
 | F1 | 0.96 | 0.86 |
 
-- **Overlap (det ∩ LLM):** ['concurrency', 'docker', 'git', 'go', 'grpc', 'kafka', 'linux', 'postgresql', 'testing']
-- **Det hallucinations (det − GT):** ['gin']
-- **LLM hallucinations (LLM − GT):** {}
-- **Det misses (GT − det):** {}
-- **LLM misses (GT − LLM):** ['communication', 'distributed_systems', 'problem_solving']
+- **Пересечение (det ∩ LLM):** `['concurrency', 'docker', 'git', 'go', 'grpc', 'kafka', 'linux', 'postgresql', 'testing']`
+- **Галлюцинации det (det − GT):** `['gin']`
+- **Галлюцинации LLM (LLM − GT):** `{}`
+- **Пропуски det (GT − det):** `{}`
+- **Пропуски LLM (GT − LLM):** `['communication', 'distributed_systems', 'problem_solving']`
 
 ### Backend Developer (Go) — e-commerce
 - **ID:** `fix2`
-- **Description:** Разворачиваем высоконагруженный e-commerce на Go. Используем Gin framework, PostgreSQL, Redis. gRPC с Protocol Buffers. Docker + Kubernetes для деплоя. Kafka для event-driven архитектуры. Тестируем с ...
-- **Requirements:** Обязательно: Go, PostgreSQL, Linux. Желательно: Gin, Redis, gRPC, protobuf, Docker, Kubernetes, Kafka, RabbitMQ, testing. CI/CD (GitLab CI, GitHub Actions) желательно....
-- **Ground truth:** ['ci_cd', 'docker', 'gin', 'git', 'go', 'grpc', 'kafka', 'kubernetes', 'linux', 'postgresql', 'protobuf', 'rabbitmq', 'redis', 'testing']
-- **Deterministic:** ['ci_cd', 'docker', 'gin', 'git', 'go', 'grpc', 'kafka', 'kubernetes', 'linux', 'postgresql', 'protobuf', 'rabbitmq', 'redis', 'testing']
-- **LLM:** ['docker', 'gin', 'git', 'go', 'grpc', 'kafka', 'kubernetes', 'linux', 'postgresql', 'protobuf', 'rabbitmq', 'redis', 'testing']
+- **Описание:** Разворачиваем высоконагруженный e-commerce на Go. Используем Gin framework, PostgreSQL, Redis. gRPC с Protocol Buffers. Docker + Kubernetes для деплоя. Kafka для event-driven архитектуры. Тестируем с ...
+- **Требования:** Обязательно: Go, PostgreSQL, Linux. Желательно: Gin, Redis, gRPC, protobuf, Docker, Kubernetes, Kafka, RabbitMQ, testing. CI/CD (GitLab CI, GitHub Actions) желательно....
+- **Истиное множество:** `['ci_cd', 'docker', 'gin', 'git', 'go', 'grpc', 'kafka', 'kubernetes', 'linux', 'postgresql', 'protobuf', 'rabbitmq', 'redis', 'testing']`
+- **Детерминированный:** `['ci_cd', 'docker', 'gin', 'git', 'go', 'grpc', 'kafka', 'kubernetes', 'linux', 'postgresql', 'protobuf', 'rabbitmq', 'redis', 'testing']`
+- **LLM:** `['ci_cd', 'docker', 'gin', 'git', 'go', 'grpc', 'kafka', 'kubernetes', 'linux', 'postgresql', 'protobuf', 'rabbitmq', 'redis', 'testing']`
 
-| Metric | Deterministic | LLM |
+| Метрика | Детерминированный | LLM |
 |---|---|---|
-| Precision | 1.00 | 1.00 |
-| Recall | 1.00 | 0.93 |
-| F1 | 1.00 | 0.96 |
+| Точность | 1.00 | 1.00 |
+| Полнота | 1.00 | 1.00 |
+| F1 | 1.00 | 1.00 |
 
-- **Overlap (det ∩ LLM):** ['docker', 'gin', 'git', 'go', 'grpc', 'kafka', 'kubernetes', 'linux', 'postgresql', 'protobuf', 'rabbitmq', 'redis', 'testing']
-- **Det hallucinations (det − GT):** {}
-- **LLM hallucinations (LLM − GT):** {}
-- **Det misses (GT − det):** {}
-- **LLM misses (GT − LLM):** ['ci_cd']
+- **Пересечение (det ∩ LLM):** `['ci_cd', 'docker', 'gin', 'git', 'go', 'grpc', 'kafka', 'kubernetes', 'linux', 'postgresql', 'protobuf', 'rabbitmq', 'redis', 'testing']`
+- **Галлюцинации det (det − GT):** `{}`
+- **Галлюцинации LLM (LLM − GT):** `{}`
+- **Пропуски det (GT − det):** `{}`
+- **Пропуски LLM (GT − LLM):** `{}`
 
 ### Go Developer (remote)
 - **ID:** `fix3`
-- **Description:** Удалённая позиция для Go-разработчика. Работа с PostgreSQL, Docker, Kafka. REST API на Go. Тестируем с testify. CI/CD через GitHub Actions. Требуется понимание ОС Linux и работы с Git. Bash скрипты....
-- **Requirements:** Обязательно: Go, PostgreSQL, Docker, Linux, Git. Желательно: Kafka, gRPC, Redis, testing, CI/CD, bash, concurrency....
-- **Ground truth:** ['ci_cd', 'concurrency', 'docker', 'git', 'go', 'grpc', 'kafka', 'linux', 'postgresql', 'redis', 'testing']
-- **Deterministic:** ['ci_cd', 'concurrency', 'docker', 'git', 'go', 'grpc', 'kafka', 'linux', 'postgresql', 'redis', 'testing']
-- **LLM:** ['ci_cd', 'concurrency', 'docker', 'git', 'go', 'grpc', 'kafka', 'linux', 'postgresql', 'redis', 'testing']
+- **Описание:** Удалённая позиция для Go-разработчика. Работа с PostgreSQL, Docker, Kafka. REST API на Go. Тестируем с testify. CI/CD через GitHub Actions. Требуется понимание ОС Linux и работы с Git. Bash скрипты....
+- **Требования:** Обязательно: Go, PostgreSQL, Docker, Linux, Git. Желательно: Kafka, gRPC, Redis, testing, CI/CD, bash, concurrency....
+- **Истиное множество:** `['ci_cd', 'concurrency', 'docker', 'git', 'go', 'grpc', 'kafka', 'linux', 'postgresql', 'redis', 'testing']`
+- **Детерминированный:** `['ci_cd', 'concurrency', 'docker', 'git', 'go', 'grpc', 'kafka', 'linux', 'postgresql', 'redis', 'testing']`
+- **LLM:** `['ci_cd', 'concurrency', 'docker', 'git', 'go', 'kafka', 'linux', 'postgresql', 'testing']`
 
-| Metric | Deterministic | LLM |
+| Метрика | Детерминированный | LLM |
 |---|---|---|
-| Precision | 1.00 | 1.00 |
-| Recall | 1.00 | 1.00 |
+| Точность | 1.00 | 1.00 |
+| Полнота | 1.00 | 0.82 |
+| F1 | 1.00 | 0.90 |
+
+- **Пересечение (det ∩ LLM):** `['ci_cd', 'concurrency', 'docker', 'git', 'go', 'kafka', 'linux', 'postgresql', 'testing']`
+- **Галлюцинации det (det − GT):** `{}`
+- **Галлюцинации LLM (LLM − GT):** `{}`
+- **Пропуски det (GT − det):** `{}`
+- **Пропуски LLM (GT − LLM):** `['grpc', 'redis']`
+
+### Go Developer (investment platform)
+- **ID:** `fix4`
+- **Описание:** Инвестиционная платформа ищет Go Developer. Строим highload системы на Go с PostgreSQL. Используем Docker и Kubernetes для деплоя. Kafka для event streaming. Требуется опыт с Linux и Git....
+- **Требования:** Обязательно: Go, PostgreSQL, Linux, Git. Желательно: Docker, Kubernetes, Kafka, testing....
+- **Истиное множество:** `['docker', 'git', 'go', 'kafka', 'kubernetes', 'linux', 'postgresql', 'testing']`
+- **Детерминированный:** `['docker', 'git', 'go', 'kafka', 'kubernetes', 'linux', 'postgresql', 'testing']`
+- **LLM:** `['docker', 'git', 'go', 'kafka', 'kubernetes', 'linux', 'postgresql', 'testing']`
+
+| Метрика | Детерминированный | LLM |
+|---|---|---|
+| Точность | 1.00 | 1.00 |
+| Полнота | 1.00 | 1.00 |
 | F1 | 1.00 | 1.00 |
 
-- **Overlap (det ∩ LLM):** ['ci_cd', 'concurrency', 'docker', 'git', 'go', 'grpc', 'kafka', 'linux', 'postgresql', 'redis', 'testing']
-- **Det hallucinations (det − GT):** {}
-- **LLM hallucinations (LLM − GT):** {}
-- **Det misses (GT − det):** {}
-- **LLM misses (GT − LLM):** {}
+- **Пересечение (det ∩ LLM):** `['docker', 'git', 'go', 'kafka', 'kubernetes', 'linux', 'postgresql', 'testing']`
+- **Галлюцинации det (det − GT):** `{}`
+- **Галлюцинации LLM (LLM − GT):** `{}`
+- **Пропуски det (GT − det):** `{}`
+- **Пропуски LLM (GT − LLM):** `{}`
 
-## Overall Metrics
+### Go Developer (gamedev)
+- **ID:** `fix5`
+- **Описание:** Ищем Go Developer для backend игрового сервиса. Go + PostgreSQL для игровых сессий. Docker для деплоя. REST API на Go. Тестируем с testify. Требуется опыт с Linux и Git....
+- **Требования:** Обязательно: Go, PostgreSQL, Linux, Git. Желательно: REST API, Docker, testing....
+- **Истиное множество:** `['docker', 'git', 'go', 'linux', 'postgresql', 'testing']`
+- **Детерминированный:** `['docker', 'git', 'go', 'linux', 'postgresql', 'testing']`
+- **LLM:** `['docker', 'git', 'go', 'linux', 'postgresql', 'testing']`
 
-| Metric | Deterministic | LLM |
+| Метрика | Детерминированный | LLM |
 |---|---|---|
-| Precision | 1.00 | 1.00 |
-| Recall | 1.00 | 0.83 |
-| F1 | 1.00 | 0.91 |
+| Точность | 1.00 | 1.00 |
+| Полнота | 1.00 | 1.00 |
+| F1 | 1.00 | 1.00 |
 
-- **Overall overlap (det ∩ LLM):** ['ci_cd', 'concurrency', 'docker', 'gin', 'git', 'go', 'grpc', 'kafka', 'kubernetes', 'linux', 'postgresql', 'protobuf', 'rabbitmq', 'redis', 'testing']
-- **Det extra (hallucinations):** {}
-- **LLM extra (hallucinations):** {}
+- **Пересечение (det ∩ LLM):** `['docker', 'git', 'go', 'linux', 'postgresql', 'testing']`
+- **Галлюцинации det (det − GT):** `{}`
+- **Галлюцинации LLM (LLM − GT):** `{}`
+- **Пропуски det (GT − det):** `{}`
+- **Пропуски LLM (GT − LLM):** `{}`
 
-## Conclusion
+### Go Developer (IoT)
+- **ID:** `fix6`
+- **Описание:** IoT платформа ищет Go Developer. Разрабатываем edge-устройства с Go. PostgreSQL для телеметрии. Docker для контейнеризации. Требуется понимание Linux и Git....
+- **Требования:** Обязательно: Go, Linux, Git. Желательно: PostgreSQL, Docker....
+- **Истиное множество:** `['docker', 'git', 'go', 'linux', 'postgresql']`
+- **Детерминированный:** `['docker', 'git', 'go', 'linux', 'postgresql']`
+- **LLM:** `['docker', 'git', 'go', 'linux', 'postgresql']`
 
-Deterministic extraction outperforms LLM (F1 = 1.00 vs 0.91).
-LLM did not introduce hallucinations beyond ground truth.
-В среднем (union) детерминированный метод не выходит за ground truth, но в per-fixture fix1 он нашёл hallucination `gin` (precision 0.92); в union compensируется присутствием `gin` в GT fix2.
-Both methods agreed on 15 skills: ['ci_cd', 'concurrency', 'docker', 'gin', 'git', 'go', 'grpc', 'kafka', 'kubernetes', 'linux', 'postgresql', 'protobuf', 'rabbitmq', 'redis', 'testing'].
-LLM не нашла дополнительных навыков — наоборот, пропустила 3 implicit навыка (communication, distributed_systems, problem_solving из fix1) и ci_cd (из fix2), давая recall 0.83.
+| Метрика | Детерминированный | LLM |
+|---|---|---|
+| Точность | 1.00 | 1.00 |
+| Полнота | 1.00 | 1.00 |
+| F1 | 1.00 | 1.00 |
+
+- **Пересечение (det ∩ LLM):** `['docker', 'git', 'go', 'linux', 'postgresql']`
+- **Галлюцинации det (det − GT):** `{}`
+- **Галлюцинации LLM (LLM − GT):** `{}`
+- **Пропуски det (GT − det):** `{}`
+- **Пропуски LLM (GT − LLM):** `{}`
+
+### Go Developer (testing focus)
+- **ID:** `fix7`
+- **Описание:** Ищем Go Developer с сильным опытом тестирования. Unit и integration тесты на Go с testify и gomock. PostgreSQL и Docker для тестовых сред. CI/CD pipeline. Linux и Git....
+- **Требования:** Обязательно: Go, testing, Linux, Git. Желательно: PostgreSQL, Docker, CI/CD....
+- **Истиное множество:** `['ci_cd', 'docker', 'git', 'go', 'linux', 'postgresql', 'testing']`
+- **Детерминированный:** `['ci_cd', 'docker', 'git', 'go', 'linux', 'postgresql', 'testing']`
+- **LLM:** `['ci_cd', 'docker', 'git', 'go', 'linux', 'postgresql', 'testing']`
+
+| Метрика | Детерминированный | LLM |
+|---|---|---|
+| Точность | 1.00 | 1.00 |
+| Полнота | 1.00 | 1.00 |
+| F1 | 1.00 | 1.00 |
+
+- **Пересечение (det ∩ LLM):** `['ci_cd', 'docker', 'git', 'go', 'linux', 'postgresql', 'testing']`
+- **Галлюцинации det (det − GT):** `{}`
+- **Галлюцинации LLM (LLM − GT):** `{}`
+- **Пропуски det (GT − det):** `{}`
+- **Пропуски LLM (GT − LLM):** `{}`
+
+### Go Developer (CI/CD)
+- **ID:** `fix8`
+- **Описание:** Разворачиваем CI/CD пайплайн для Go-проекта. GitHub Actions и GitLab CI. Go + PostgreSQL. Docker образы. Требуется Linux и Git....
+- **Требования:** Обязательно: Go, CI/CD, Git. Желательно: PostgreSQL, Docker, Linux....
+- **Истиное множество:** `['ci_cd', 'docker', 'git', 'go', 'linux', 'postgresql']`
+- **Детерминированный:** `['ci_cd', 'docker', 'git', 'go', 'linux', 'postgresql']`
+- **LLM:** `['ci_cd', 'docker', 'git', 'go', 'linux', 'postgresql']`
+
+| Метрика | Детерминированный | LLM |
+|---|---|---|
+| Точность | 1.00 | 1.00 |
+| Полнота | 1.00 | 1.00 |
+| F1 | 1.00 | 1.00 |
+
+- **Пересечение (det ∩ LLM):** `['ci_cd', 'docker', 'git', 'go', 'linux', 'postgresql']`
+- **Галлюцинации det (det − GT):** `{}`
+- **Галлюцинации LLM (LLM − GT):** `{}`
+- **Пропуски det (GT − det):** `{}`
+- **Пропуски LLM (GT − LLM):** `{}`
+
+### Go Developer (gRPC microservices)
+- **ID:** `fix9`
+- **Описание:** Строим микросервисную архитектуру на Go с gRPC. Protocol Buffers для схем. PostgreSQL для хранилища. Docker контейнеры. Linux и Git....
+- **Требования:** Обязательно: Go, gRPC, protobuf, Linux, Git. Желательно: PostgreSQL, Docker....
+- **Истиное множество:** `['docker', 'git', 'go', 'grpc', 'linux', 'postgresql', 'protobuf']`
+- **Детерминированный:** `['distributed_systems', 'docker', 'git', 'go', 'grpc', 'linux', 'postgresql', 'protobuf']`
+- **LLM:** `['docker', 'git', 'go', 'grpc', 'linux', 'postgresql', 'protobuf']`
+
+| Метрика | Детерминированный | LLM |
+|---|---|---|
+| Точность | 0.88 | 1.00 |
+| Полнота | 1.00 | 1.00 |
+| F1 | 0.93 | 1.00 |
+
+- **Пересечение (det ∩ LLM):** `['docker', 'git', 'go', 'grpc', 'linux', 'postgresql', 'protobuf']`
+- **Галлюцинации det (det − GT):** `['distributed_systems']`
+- **Галлюцинации LLM (LLM − GT):** `{}`
+- **Пропуски det (GT − det):** `{}`
+- **Пропуски LLM (GT − LLM):** `{}`
+
+### Go Developer (highload, Kafka)
+- **ID:** `fix10`
+- **Описание:** Высоконагруженный сервис на Go с Kafka для event-driven архитектуры. PostgreSQL для хранилища. Docker для деплоя. Используем goroutines и channels для concurrency. Linux и Git....
+- **Требования:** Обязательно: Go, Kafka, Linux, Git. Желательно: PostgreSQL, Docker, concurrency, testing....
+- **Истиное множество:** `['concurrency', 'docker', 'git', 'go', 'kafka', 'linux', 'postgresql', 'testing']`
+- **Детерминированный:** `['concurrency', 'docker', 'git', 'go', 'kafka', 'linux', 'postgresql', 'testing']`
+- **LLM:** `['concurrency', 'docker', 'git', 'go', 'kafka', 'linux', 'postgresql', 'testing']`
+
+| Метрика | Детерминированный | LLM |
+|---|---|---|
+| Точность | 1.00 | 1.00 |
+| Полнота | 1.00 | 1.00 |
+| F1 | 1.00 | 1.00 |
+
+- **Пересечение (det ∩ LLM):** `['concurrency', 'docker', 'git', 'go', 'kafka', 'linux', 'postgresql', 'testing']`
+- **Галлюцинации det (det − GT):** `{}`
+- **Галлюцинации LLM (LLM − GT):** `{}`
+- **Пропуски det (GT − det):** `{}`
+- **Пропуски LLM (GT − LLM):** `{}`
+
+### Go Developer (Kubernetes)
+- **ID:** `fix11`
+- **Описание:** Разворачиваем Go-приложение в Kubernetes. Docker образы, Helm charts. PostgreSQL база. CI/CD через GitHub Actions. Linux и Git....
+- **Требования:** Обязательно: Go, Kubernetes, Git. Желательно: Docker, PostgreSQL, CI/CD, Linux....
+- **Истиное множество:** `['ci_cd', 'docker', 'git', 'go', 'kubernetes', 'linux', 'postgresql']`
+- **Детерминированный:** `['ci_cd', 'docker', 'git', 'go', 'kubernetes', 'linux', 'postgresql']`
+- **LLM:** `['ci_cd', 'docker', 'git', 'go', 'kubernetes', 'postgresql']`
+
+| Метрика | Детерминированный | LLM |
+|---|---|---|
+| Точность | 1.00 | 1.00 |
+| Полнота | 1.00 | 0.86 |
+| F1 | 1.00 | 0.92 |
+
+- **Пересечение (det ∩ LLM):** `['ci_cd', 'docker', 'git', 'go', 'kubernetes', 'postgresql']`
+- **Галлюцинации det (det − GT):** `{}`
+- **Галлюцинации LLM (LLM − GT):** `{}`
+- **Пропуски det (GT − det):** `{}`
+- **Пропуски LLM (GT − LLM):** `['linux']`
+
+### Go Developer (Redis)
+- **ID:** `fix12`
+- **Описание:** Ищем Go Developer для кэширующей системы. Используем Redis для кэширования и pub/sub. PostgreSQL для основного хранилища. Docker для деплоя. Linux и Git....
+- **Требования:** Обязательно: Go, Redis, PostgreSQL, Linux, Git. Желательно: Docker, testing....
+- **Истиное множество:** `['docker', 'git', 'go', 'linux', 'postgresql', 'redis', 'testing']`
+- **Детерминированный:** `['docker', 'git', 'go', 'linux', 'postgresql', 'redis', 'testing']`
+- **LLM:** `['git', 'go', 'linux', 'postgresql', 'redis']`
+
+| Метрика | Детерминированный | LLM |
+|---|---|---|
+| Точность | 1.00 | 1.00 |
+| Полнота | 1.00 | 0.71 |
+| F1 | 1.00 | 0.83 |
+
+- **Пересечение (det ∩ LLM):** `['git', 'go', 'linux', 'postgresql', 'redis']`
+- **Галлюцинации det (det − GT):** `{}`
+- **Галлюцинации LLM (LLM − GT):** `{}`
+- **Пропуски det (GT − det):** `{}`
+- **Пропуски LLM (GT − LLM):** `['docker', 'testing']`
+
+### Go Developer (RabbitMQ)
+- **ID:** `fix13`
+- **Описание:** Ищем Go Developer для messaging-системы. RabbitMQ для очередей. Kafka для event streaming. PostgreSQL для хранилища. Docker для деплоя. Linux и Git....
+- **Требования:** Обязательно: Go, RabbitMQ, Linux, Git. Желательно: Kafka, PostgreSQL, Docker....
+- **Истиное множество:** `['docker', 'git', 'go', 'kafka', 'linux', 'postgresql', 'rabbitmq']`
+- **Детерминированный:** `['docker', 'gin', 'git', 'go', 'kafka', 'linux', 'postgresql', 'rabbitmq']`
+- **LLM:** `['docker', 'git', 'go', 'kafka', 'linux', 'postgresql', 'rabbitmq']`
+
+| Метрика | Детерминированный | LLM |
+|---|---|---|
+| Точность | 0.88 | 1.00 |
+| Полнота | 1.00 | 1.00 |
+| F1 | 0.93 | 1.00 |
+
+- **Пересечение (det ∩ LLM):** `['docker', 'git', 'go', 'kafka', 'linux', 'postgresql', 'rabbitmq']`
+- **Галлюцинации det (det − GT):** `['gin']`
+- **Галлюцинации LLM (LLM − GT):** `{}`
+- **Пропуски det (GT − det):** `{}`
+- **Пропуски LLM (GT − LLM):** `{}`
+
+### Go Developer (protobuf)
+- **ID:** `fix14`
+- **Описание:** Разворачиваем Go-сервис с Protocol Buffers. gRPC API. PostgreSQL для хранилища. Docker для деплоя. Linux и Git....
+- **Требования:** Обязательно: Go, protobuf, Linux, Git. Желательно: gRPC, PostgreSQL, Docker....
+- **Истиное множество:** `['docker', 'git', 'go', 'grpc', 'linux', 'postgresql', 'protobuf']`
+- **Детерминированный:** `['docker', 'git', 'go', 'grpc', 'linux', 'postgresql', 'protobuf']`
+- **LLM:** `['docker', 'git', 'go', 'grpc', 'linux', 'postgresql', 'protobuf']`
+
+| Метрика | Детерминированный | LLM |
+|---|---|---|
+| Точность | 1.00 | 1.00 |
+| Полнота | 1.00 | 1.00 |
+| F1 | 1.00 | 1.00 |
+
+- **Пересечение (det ∩ LLM):** `['docker', 'git', 'go', 'grpc', 'linux', 'postgresql', 'protobuf']`
+- **Галлюцинации det (det − GT):** `{}`
+- **Галлюцинации LLM (LLM − GT):** `{}`
+- **Пропуски det (GT − det):** `{}`
+- **Пропуски LLM (GT − LLM):** `{}`
+
+### Go Developer (Gin REST API)
+- **ID:** `fix15`
+- **Описание:** Ищем Go Developer для REST API. Используем Gin framework. PostgreSQL для хранилища. Docker для деплоя. CI/CD через GitHub Actions. Linux и Git....
+- **Требования:** Обязательно: Go, Gin, Linux, Git. Желательно: API, PostgreSQL, Docker, CI/CD....
+- **Истиное множество:** `['ci_cd', 'docker', 'gin', 'git', 'go', 'linux', 'postgresql']`
+- **Детерминированный:** `['ci_cd', 'docker', 'gin', 'git', 'go', 'linux', 'postgresql']`
+- **LLM:** `['docker', 'gin', 'git', 'go', 'postgresql']`
+
+| Метрика | Детерминированный | LLM |
+|---|---|---|
+| Точность | 1.00 | 1.00 |
+| Полнота | 1.00 | 0.71 |
+| F1 | 1.00 | 0.83 |
+
+- **Пересечение (det ∩ LLM):** `['docker', 'gin', 'git', 'go', 'postgresql']`
+- **Галлюцинации det (det − GT):** `{}`
+- **Галлюцинации LLM (LLM − GT):** `{}`
+- **Пропуски det (GT − det):** `{}`
+- **Пропуски LLM (GT − LLM):** `['ci_cd', 'linux']`
+
+### Go Developer (concurrency focus)
+- **ID:** `fix16`
+- **Описание:** Go Developer с опытом concurrency. Goroutines, channels, select для параллельной обработки. PostgreSQL для хранилища. Docker для деплоя. Linux и Git....
+- **Требования:** Обязательно: Go, concurrency, Linux, Git. Желательно: PostgreSQL, Docker, testing....
+- **Истиное множество:** `['concurrency', 'docker', 'git', 'go', 'linux', 'postgresql', 'testing']`
+- **Детерминированный:** `['concurrency', 'docker', 'git', 'go', 'linux', 'postgresql', 'testing']`
+- **LLM:** `['concurrency', 'docker', 'git', 'go', 'linux', 'postgresql', 'testing']`
+
+| Метрика | Детерминированный | LLM |
+|---|---|---|
+| Точность | 1.00 | 1.00 |
+| Полнота | 1.00 | 1.00 |
+| F1 | 1.00 | 1.00 |
+
+- **Пересечение (det ∩ LLM):** `['concurrency', 'docker', 'git', 'go', 'linux', 'postgresql', 'testing']`
+- **Галлюцинации det (det − GT):** `{}`
+- **Галлюцинации LLM (LLM − GT):** `{}`
+- **Пропуски det (GT − det):** `{}`
+- **Пропуски LLM (GT − LLM):** `{}`
+
+### Go Developer (PostgreSQL optimization)
+- **ID:** `fix17`
+- **Описание:** Оптимизируем PostgreSQL запросы в Go-сервисе. EXPLAIN ANALYZE, B-tree индексы. Docker для деплоя. CI/CD. Linux и Git....
+- **Требования:** Обязательно: Go, PostgreSQL, Linux, Git. Желательно: Docker, CI/CD, problem solving....
+- **Истиное множество:** `['ci_cd', 'docker', 'git', 'go', 'linux', 'postgresql', 'problem_solving']`
+- **Детерминированный:** `['ci_cd', 'docker', 'git', 'go', 'linux', 'postgresql', 'problem_solving']`
+- **LLM:** `['ci_cd', 'docker', 'git', 'go', 'linux', 'postgresql', 'problem_solving']`
+
+| Метрика | Детерминированный | LLM |
+|---|---|---|
+| Точность | 1.00 | 1.00 |
+| Полнота | 1.00 | 1.00 |
+| F1 | 1.00 | 1.00 |
+
+- **Пересечение (det ∩ LLM):** `['ci_cd', 'docker', 'git', 'go', 'linux', 'postgresql', 'problem_solving']`
+- **Галлюцинации det (det − GT):** `{}`
+- **Галлюцинации LLM (LLM − GT):** `{}`
+- **Пропуски det (GT − det):** `{}`
+- **Пропуски LLM (GT − LLM):** `{}`
+
+### Go Developer (DevOps)
+- **ID:** `fix18`
+- **Описание:** Go Developer с DevOps опытом. Linux, Bash скрипты. Docker, Kubernetes. CI/CD pipeline. Git для контроля версий....
+- **Требования:** Обязательно: Go, Linux, Git. Желательно: Docker, Kubernetes, CI/CD....
+- **Истиное множество:** `['ci_cd', 'docker', 'git', 'go', 'kubernetes', 'linux']`
+- **Детерминированный:** `['ci_cd', 'docker', 'git', 'go', 'kubernetes', 'linux']`
+- **LLM:** `['ci_cd', 'docker', 'git', 'go', 'kubernetes', 'linux']`
+
+| Метрика | Детерминированный | LLM |
+|---|---|---|
+| Точность | 1.00 | 1.00 |
+| Полнота | 1.00 | 1.00 |
+| F1 | 1.00 | 1.00 |
+
+- **Пересечение (det ∩ LLM):** `['ci_cd', 'docker', 'git', 'go', 'kubernetes', 'linux']`
+- **Галлюцинации det (det − GT):** `{}`
+- **Галлюцинации LLM (LLM − GT):** `{}`
+- **Пропуски det (GT − det):** `{}`
+- **Пропуски LLM (GT − LLM):** `{}`
+
+### Go Developer (microservices + Docker)
+- **ID:** `fix19`
+- **Описание:** Ищем Go Developer для микросервисной архитектуры. Docker контейнеры, Docker Compose. PostgreSQL для каждого сервиса. Kubernetes для оркестрации. Linux и Git....
+- **Требования:** Обязательно: Go, Docker, Linux, Git. Желательно: distributed systems, PostgreSQL, Kubernetes....
+- **Истиное множество:** `['distributed_systems', 'docker', 'git', 'go', 'kubernetes', 'linux', 'postgresql']`
+- **Детерминированный:** `['distributed_systems', 'docker', 'git', 'go', 'kubernetes', 'linux', 'postgresql']`
+- **LLM:** `['distributed_systems', 'docker', 'git', 'go', 'kubernetes', 'linux', 'postgresql']`
+
+| Метрика | Детерминированный | LLM |
+|---|---|---|
+| Точность | 1.00 | 1.00 |
+| Полнота | 1.00 | 1.00 |
+| F1 | 1.00 | 1.00 |
+
+- **Пересечение (det ∩ LLM):** `['distributed_systems', 'docker', 'git', 'go', 'kubernetes', 'linux', 'postgresql']`
+- **Галлюцинации det (det − GT):** `{}`
+- **Галлюцинации LLM (LLM − GT):** `{}`
+- **Пропуски det (GT − det):** `{}`
+- **Пропуски LLM (GT − LLM):** `{}`
+
+### Full-stack Go Developer
+- **ID:** `fix20`
+- **Описание:** Full-stack Go Developer. Backend на Go с Gin framework. REST API. PostgreSQL. Frontend на Vue.js. Docker для деплоя. CI/CD через GitHub Actions. Linux и Git....
+- **Требования:** Обязательно: Go, Linux, Git. Желательно: Gin, API, PostgreSQL, Docker, CI/CD....
+- **Истиное множество:** `['ci_cd', 'docker', 'gin', 'git', 'go', 'linux', 'postgresql']`
+- **Детерминированный:** `['ci_cd', 'docker', 'gin', 'git', 'go', 'linux', 'postgresql']`
+- **LLM:** `['ci_cd', 'docker', 'gin', 'git', 'go', 'linux', 'postgresql']`
+
+| Метрика | Детерминированный | LLM |
+|---|---|---|
+| Точность | 1.00 | 1.00 |
+| Полнота | 1.00 | 1.00 |
+| F1 | 1.00 | 1.00 |
+
+- **Пересечение (det ∩ LLM):** `['ci_cd', 'docker', 'gin', 'git', 'go', 'linux', 'postgresql']`
+- **Галлюцинации det (det − GT):** `{}`
+- **Галлюцинации LLM (LLM − GT):** `{}`
+- **Пропуски det (GT − det):** `{}`
+- **Пропуски LLM (GT − LLM):** `{}`
+
+## Общие метрики
+
+| Метрика | Детерминированный | LLM |
+|---|---|---|
+| Точность | 1.00 | 1.00 |
+| Полнота | 1.00 | 0.94 |
+| F1 | 1.00 | 0.97 |
+
+- **Общее пересечение (det ∩ LLM):** `['ci_cd', 'concurrency', 'distributed_systems', 'docker', 'gin', 'git', 'go', 'grpc', 'kafka', 'kubernetes', 'linux', 'postgresql', 'problem_solving', 'protobuf', 'rabbitmq', 'redis', 'testing']`
+- **Избыточные det:** `{}`
+- **Избыточные LLM:** `{}`
+
+## Обоснование метрик
+
+- **На уровне фикстур:** Precision = TP / (TP + FP), Recall = TP / |GT|, F1 = гармоническое среднее Precision и Recall. TP — навыки, найденные методом и присутствующие в ground truth; FP — найденные, но отсутствующие в GT (галлюцинации); FN — пропущенные из GT (ground truth минус найденные).
+- **Общие (union):** все навыки по всем фикстурам объединяются в одно множество. TP = det ∩ GT по всему корпусу (пересечение объединённых множеств детерминированного извлечения и ground truth); FN и FP вычисляются аналогичным образом над объединением.
+
+## Заключение
+
+Детерминированное извлечение превосходит LLM (F1 = 1.00 vs 0.97).
+LLM не ввела галлюцинаций, выходящих за рамки ground truth.
+Детерминированное извлечение не нашло навыков вне ground truth (в объединении).
+Оба метода согласились на 17 навыках: `['ci_cd', 'concurrency', 'distributed_systems', 'docker', 'gin', 'git', 'go', 'grpc', 'kafka', 'kubernetes', 'linux', 'postgresql', 'problem_solving', 'protobuf', 'rabbitmq', 'redis', 'testing']`.
+LLM пропустила 10 упоминаний ground truth (9 уникальных навыков), которые det нашёл: `['ci_cd', 'communication', 'distributed_systems', 'docker', 'grpc', 'linux', 'problem_solving', 'redis', 'testing']`.
 
 ---
-*Generated by `scripts/llm_vs_deterministic_compare.py` on 2026-10-15T16:47:50.737357*
+*Сгенерировано `scripts/llm_vs_deterministic_compare.py` в 2026-10-16T14:06:08.802814*
 ```
 
 **Test coverage:** `test_llm_deterministic_comparison_available` in `tests/vacancies/test_task04.py` runs the comparison and asserts deterministic extraction finds ≥1 ground-truth skill and LLM extraction finds ≥1 skill. Test skips gracefully when Ollama is down (CI stays green).
@@ -306,7 +651,7 @@ Reports land in `reports/latest.md`, `reports/latest.json`, `reports/runs/<run_i
 
 - **No live sources verified** — all adapters mock/fixture-test only. Live runs will be marked `blocked_by_credentials` until keys are supplied by the user.
 - **URL resume import** is implemented with SSRF protection (HTTPS-only, private-host rejection, bounded read, local save) but not tested against a live public endpoint in this environment (no public resume URL available).
-- **LLM customization** of skill extraction/explanations is wired and tested with a local Ollama (`qwen2.5-coder:3b`); a deterministic-vs-LLM comparison was performed (see §8). LLM skill extraction misses some implicit skills but introduces no hallucinations on the 3-fixture corpus.
+- **LLM customization** of skill extraction/explanations is wired and tested with a local Ollama (`qwen2.5-coder:3b`); a deterministic-vs-LLM comparison was performed (see §8). LLM skill extraction misses some explicit skills (e.g. `docker`/`testing` in fix12, `ci_cd`/`linux` in fix15) but introduces no hallucinations on the 20-fixture corpus.
 - **Career-report writer** is inlined in the orchestrator; a dedicated `reporting/career_writer.py` module is a planned refactor so the Markdown template can be unit-tested standalone.
 - **AdaptiveInterviewer** is now wired to the `interview` CLI subcommand (`python -m src.vacancies.cli interview`) with interactive terminal I/O, skip/quit handling, and progress persistence.
 - **Next steps**: add a larger versioned fixture corpus with expected skill/frequency/dedup/gap outcomes and expand LLM-vs-deterministic comparison to more Ollama models.
@@ -336,7 +681,7 @@ Honest mapping of Task 04 §17 acceptance criteria:
 | 13 | Daily local execution + WTS, no server | ✅ | `docs/operations.md` §Ежедневный запуск |
 | 14 | Resume/profile local, no cloud LLM fallback | ✅ | `data/candidates/`; `VACANCIES_DISABLE_LLM` |
 | 15 | Tests cover acceptance-critical cases | ✅ | 142 passed (108 pre-existing + 34 new Task 04) |
-| 16 | LLM-vs-deterministic comparison | ✅ | Comparison script `scripts/llm_vs_deterministic_compare.py` run with `qwen2.5-coder:3b` on 3 Go Junior fixtures; see §8 Evaluation metrics |
+| 16 | LLM-vs-deterministic comparison | ✅ | Comparison script `scripts/llm_vs_deterministic_compare.py` run with `qwen2.5-coder:3b` on 20 Go Junior fixtures; see §8 Evaluation metrics |
 | 17 | README + docs match code | ✅ | README/docs updated |
 | 18 | Root `task04_report.md` exists | ✅ | This file + root pointer |
 

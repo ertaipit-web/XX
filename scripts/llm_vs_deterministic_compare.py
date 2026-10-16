@@ -166,7 +166,273 @@ FIXTURE_3: Vacancy = _make_vacancy(
     ),
 )
 
-ALL_FIXTURES: List[Vacancy] = [FIXTURE_1, FIXTURE_2, FIXTURE_3]
+FIXTURE_4: Vacancy = _make_vacancy(
+    vid="fix4",
+    title="Go Developer (investment platform)",
+    description=(
+        "Инвестиционная платформа ищет Go Developer. "
+        "Строим highload системы на Go с PostgreSQL. "
+        "Используем Docker и Kubernetes для деплоя. "
+        "Kafka для event streaming. "
+        "Требуется опыт с Linux и Git."
+    ),
+    requirements=(
+        "Обязательно: Go, PostgreSQL, Linux, Git. "
+        "Желательно: Docker, Kubernetes, Kafka, testing."
+    ),
+)
+
+FIXTURE_5: Vacancy = _make_vacancy(
+    vid="fix5",
+    title="Go Developer (gamedev)",
+    description=(
+        "Ищем Go Developer для backend игрового сервиса. "
+        "Go + PostgreSQL для игровых сессий. "
+        "Docker для деплоя. REST API на Go. "
+        "Тестируем с testify. "
+        "Требуется опыт с Linux и Git."
+    ),
+    requirements=(
+        "Обязательно: Go, PostgreSQL, Linux, Git. "
+        "Желательно: REST API, Docker, testing."
+    ),
+)
+
+FIXTURE_6: Vacancy = _make_vacancy(
+    vid="fix6",
+    title="Go Developer (IoT)",
+    description=(
+        "IoT платформа ищет Go Developer. "
+        "Разрабатываем edge-устройства с Go. "
+        "PostgreSQL для телеметрии. "
+        "Docker для контейнеризации. "
+        "Требуется понимание Linux и Git."
+    ),
+    requirements=(
+        "Обязательно: Go, Linux, Git. "
+        "Желательно: PostgreSQL, Docker."
+    ),
+)
+
+FIXTURE_7: Vacancy = _make_vacancy(
+    vid="fix7",
+    title="Go Developer (testing focus)",
+    description=(
+        "Ищем Go Developer с сильным опытом тестирования. "
+        "Unit и integration тесты на Go с testify и gomock. "
+        "PostgreSQL и Docker для тестовых сред. "
+        "CI/CD pipeline. Linux и Git."
+    ),
+    requirements=(
+        "Обязательно: Go, testing, Linux, Git. "
+        "Желательно: PostgreSQL, Docker, CI/CD."
+    ),
+)
+
+FIXTURE_8: Vacancy = _make_vacancy(
+    vid="fix8",
+    title="Go Developer (CI/CD)",
+    description=(
+        "Разворачиваем CI/CD пайплайн для Go-проекта. "
+        "GitHub Actions и GitLab CI. "
+        "Go + PostgreSQL. Docker образы. "
+        "Требуется Linux и Git."
+    ),
+    requirements=(
+        "Обязательно: Go, CI/CD, Git. "
+        "Желательно: PostgreSQL, Docker, Linux."
+    ),
+)
+
+FIXTURE_9: Vacancy = _make_vacancy(
+    vid="fix9",
+    title="Go Developer (gRPC microservices)",
+    description=(
+        "Строим микросервисную архитектуру на Go с gRPC. "
+        "Protocol Buffers для схем. "
+        "PostgreSQL для хранилища. Docker контейнеры. "
+        "Linux и Git."
+    ),
+    requirements=(
+        "Обязательно: Go, gRPC, protobuf, Linux, Git. "
+        "Желательно: PostgreSQL, Docker."
+    ),
+)
+
+FIXTURE_10: Vacancy = _make_vacancy(
+    vid="fix10",
+    title="Go Developer (highload, Kafka)",
+    description=(
+        "Высоконагруженный сервис на Go с Kafka для event-driven архитектуры. "
+        "PostgreSQL для хранилища. Docker для деплоя. "
+        "Используем goroutines и channels для concurrency. "
+        "Linux и Git."
+    ),
+    requirements=(
+        "Обязательно: Go, Kafka, Linux, Git. "
+        "Желательно: PostgreSQL, Docker, concurrency, testing."
+    ),
+)
+
+FIXTURE_11: Vacancy = _make_vacancy(
+    vid="fix11",
+    title="Go Developer (Kubernetes)",
+    description=(
+        "Разворачиваем Go-приложение в Kubernetes. "
+        "Docker образы, Helm charts. "
+        "PostgreSQL база. CI/CD через GitHub Actions. "
+        "Linux и Git."
+    ),
+    requirements=(
+        "Обязательно: Go, Kubernetes, Git. "
+        "Желательно: Docker, PostgreSQL, CI/CD, Linux."
+    ),
+)
+
+FIXTURE_12: Vacancy = _make_vacancy(
+    vid="fix12",
+    title="Go Developer (Redis)",
+    description=(
+        "Ищем Go Developer для кэширующей системы. "
+        "Используем Redis для кэширования и pub/sub. "
+        "PostgreSQL для основного хранилища. "
+        "Docker для деплоя. Linux и Git."
+    ),
+    requirements=(
+        "Обязательно: Go, Redis, PostgreSQL, Linux, Git. "
+        "Желательно: Docker, testing."
+    ),
+)
+
+FIXTURE_13: Vacancy = _make_vacancy(
+    vid="fix13",
+    title="Go Developer (RabbitMQ)",
+    description=(
+        "Ищем Go Developer для messaging-системы. "
+        "RabbitMQ для очередей. "
+        "Kafka для event streaming. "
+        "PostgreSQL для хранилища. Docker для деплоя. "
+        "Linux и Git."
+    ),
+    requirements=(
+        "Обязательно: Go, RabbitMQ, Linux, Git. "
+        "Желательно: Kafka, PostgreSQL, Docker."
+    ),
+)
+
+FIXTURE_14: Vacancy = _make_vacancy(
+    vid="fix14",
+    title="Go Developer (protobuf)",
+    description=(
+        "Разворачиваем Go-сервис с Protocol Buffers. "
+        "gRPC API. "
+        "PostgreSQL для хранилища. Docker для деплоя. "
+        "Linux и Git."
+    ),
+    requirements=(
+        "Обязательно: Go, protobuf, Linux, Git. "
+        "Желательно: gRPC, PostgreSQL, Docker."
+    ),
+)
+
+FIXTURE_15: Vacancy = _make_vacancy(
+    vid="fix15",
+    title="Go Developer (Gin REST API)",
+    description=(
+        "Ищем Go Developer для REST API. "
+        "Используем Gin framework. "
+        "PostgreSQL для хранилища. "
+        "Docker для деплоя. CI/CD через GitHub Actions. "
+        "Linux и Git."
+    ),
+    requirements=(
+        "Обязательно: Go, Gin, Linux, Git. "
+        "Желательно: API, PostgreSQL, Docker, CI/CD."
+    ),
+)
+
+FIXTURE_16: Vacancy = _make_vacancy(
+    vid="fix16",
+    title="Go Developer (concurrency focus)",
+    description=(
+        "Go Developer с опытом concurrency. "
+        "Goroutines, channels, select для параллельной обработки. "
+        "PostgreSQL для хранилища. Docker для деплоя. "
+        "Linux и Git."
+    ),
+    requirements=(
+        "Обязательно: Go, concurrency, Linux, Git. "
+        "Желательно: PostgreSQL, Docker, testing."
+    ),
+)
+
+FIXTURE_17: Vacancy = _make_vacancy(
+    vid="fix17",
+    title="Go Developer (PostgreSQL optimization)",
+    description=(
+        "Оптимизируем PostgreSQL запросы в Go-сервисе. "
+        "EXPLAIN ANALYZE, B-tree индексы. "
+        "Docker для деплоя. CI/CD. Linux и Git."
+    ),
+    requirements=(
+        "Обязательно: Go, PostgreSQL, Linux, Git. "
+        "Желательно: Docker, CI/CD, problem solving."
+    ),
+)
+
+FIXTURE_18: Vacancy = _make_vacancy(
+    vid="fix18",
+    title="Go Developer (DevOps)",
+    description=(
+        "Go Developer с DevOps опытом. "
+        "Linux, Bash скрипты. "
+        "Docker, Kubernetes. CI/CD pipeline. "
+        "Git для контроля версий."
+    ),
+    requirements=(
+        "Обязательно: Go, Linux, Git. "
+        "Желательно: Docker, Kubernetes, CI/CD."
+    ),
+)
+
+FIXTURE_19: Vacancy = _make_vacancy(
+    vid="fix19",
+    title="Go Developer (microservices + Docker)",
+    description=(
+        "Ищем Go Developer для микросервисной архитектуры. "
+        "Docker контейнеры, Docker Compose. "
+        "PostgreSQL для каждого сервиса. "
+        "Kubernetes для оркестрации. Linux и Git."
+    ),
+    requirements=(
+        "Обязательно: Go, Docker, Linux, Git. "
+        "Желательно: distributed systems, PostgreSQL, Kubernetes."
+    ),
+)
+
+FIXTURE_20: Vacancy = _make_vacancy(
+    vid="fix20",
+    title="Full-stack Go Developer",
+    description=(
+        "Full-stack Go Developer. "
+        "Backend на Go с Gin framework. REST API. "
+        "PostgreSQL. Frontend на Vue.js. "
+        "Docker для деплоя. CI/CD через GitHub Actions. "
+        "Linux и Git."
+    ),
+    requirements=(
+        "Обязательно: Go, Linux, Git. "
+        "Желательно: Gin, API, PostgreSQL, Docker, CI/CD."
+    ),
+)
+
+ALL_FIXTURES: List[Vacancy] = [
+    FIXTURE_1, FIXTURE_2, FIXTURE_3,
+    FIXTURE_4, FIXTURE_5, FIXTURE_6, FIXTURE_7, FIXTURE_8,
+    FIXTURE_9, FIXTURE_10, FIXTURE_11, FIXTURE_12, FIXTURE_13,
+    FIXTURE_14, FIXTURE_15, FIXTURE_16, FIXTURE_17, FIXTURE_18,
+    FIXTURE_19, FIXTURE_20,
+]
 
 
 # ---------------------------------------------------------------------------
@@ -193,6 +459,71 @@ GROUND_TRUTH: Dict[str, Set[str]] = {
         "go", "postgresql", "docker", "kafka", "testing",
         "ci_cd", "linux", "git", "concurrency",
         "grpc", "redis",
+    },
+    "fix4": {
+        "go", "postgresql", "linux", "git",
+        "docker", "kubernetes", "kafka", "testing",
+    },
+    "fix5": {
+        "go", "postgresql", "linux", "git",
+        "docker", "testing",
+    },
+    "fix6": {
+        "go", "linux", "git", "postgresql", "docker",
+    },
+    "fix7": {
+        "go", "testing", "linux", "git",
+        "postgresql", "docker", "ci_cd",
+    },
+    "fix8": {
+        "go", "ci_cd", "git", "postgresql", "docker", "linux",
+    },
+    "fix9": {
+        "go", "grpc", "protobuf", "linux", "git",
+        "postgresql", "docker",
+    },
+    "fix10": {
+        "go", "kafka", "linux", "git", "postgresql",
+        "docker", "concurrency", "testing",
+    },
+    "fix11": {
+        "go", "kubernetes", "git", "docker",
+        "postgresql", "ci_cd", "linux",
+    },
+    "fix12": {
+        "go", "redis", "postgresql", "linux", "git",
+        "docker", "testing",
+    },
+    "fix13": {
+        "go", "rabbitmq", "linux", "git",
+        "kafka", "postgresql", "docker",
+    },
+    "fix14": {
+        "go", "protobuf", "linux", "git",
+        "grpc", "postgresql", "docker",
+    },
+    "fix15": {
+        "go", "gin", "linux", "git",
+        "postgresql", "docker", "ci_cd",
+    },
+    "fix16": {
+        "go", "concurrency", "linux", "git",
+        "postgresql", "docker", "testing",
+    },
+    "fix17": {
+        "go", "postgresql", "linux", "git",
+        "docker", "ci_cd", "problem_solving",
+    },
+    "fix18": {
+        "go", "linux", "git", "docker", "kubernetes", "ci_cd",
+    },
+    "fix19": {
+        "go", "docker", "linux", "git",
+        "distributed_systems", "postgresql", "kubernetes",
+    },
+    "fix20": {
+        "go", "linux", "git", "gin",
+        "postgresql", "docker", "ci_cd",
     },
 }
 
@@ -506,62 +837,81 @@ def _fmt_set(s: Set[str] | List[str]) -> str:
 def format_report(result: Dict[str, Any]) -> str:
     """Render the comparison result as a Markdown report string."""
     lines: List[str] = []
-    lines.append("# LLM-vs-Deterministic Skill Extraction Comparison")
+    lines.append("# Сравнение: LLM vs детерминированное извлечение навыков")
     lines.append("")
-    lines.append(f"**Timestamp:** {result['timestamp']}")
-    lines.append(f"**Model:** `{result['model']}`")
-    lines.append(f"**Ollama available:** {result['ollama_available']}")
-    lines.append(f"**Fixtures:** {len(result['fixtures'])}")
+    lines.append(f"**Время:** {result['timestamp']}")
+    lines.append(f"**Модель:** `{result['model']}`")
+    lines.append(f"**Ollama доступна:** {result['ollama_available']}")
+    lines.append(f"**Фикстур:** {len(result['fixtures'])}")
     lines.append("")
 
     # Per-fixture detail
-    lines.append("## Fixture Results")
+    lines.append("## Результаты по фикстурам")
     lines.append("")
     for f in result["fixtures"]:
         lines.append(f"### {f['title']}")
         lines.append(f"- **ID:** `{f['id']}`")
-        lines.append(f"- **Description:** {f['description'][:200]}...")
-        lines.append(f"- **Requirements:** {f['requirements'][:200]}...")
-        lines.append(f"- **Ground truth:** {_fmt_set(f['ground_truth'])}")
-        lines.append(f"- **Deterministic:** {_fmt_set(f['deterministic_skills'])}")
+        lines.append(f"- **Описание:** {f['description'][:200]}...")
+        lines.append(f"- **Требования:** {f['requirements'][:200]}...")
+        lines.append(f"- **Истиное множество:** {_fmt_set(f['ground_truth'])}")
+        lines.append(f"- **Детерминированный:** {_fmt_set(f['deterministic_skills'])}")
         lines.append(f"- **LLM:** {_fmt_set(f['llm_skills'])}")
         lines.append("")
-        lines.append("| Metric | Deterministic | LLM |")
+        lines.append("| Метрика | Детерминированный | LLM |")
         lines.append("|---|---|---|")
-        lines.append(f"| Precision | {f['det_precision']:.2f} | {f['llm_precision']:.2f} |")
-        lines.append(f"| Recall | {f['det_recall']:.2f} | {f['llm_recall']:.2f} |")
+        lines.append(f"| Точность | {f['det_precision']:.2f} | {f['llm_precision']:.2f} |")
+        lines.append(f"| Полнота | {f['det_recall']:.2f} | {f['llm_recall']:.2f} |")
         lines.append(f"| F1 | {f['det_f1']:.2f} | {f['llm_f1']:.2f} |")
         lines.append("")
-        lines.append(f"- **Overlap (det ∩ LLM):** {_fmt_set(f['overlap'])}")
-        lines.append(f"- **Det hallucinations (det − GT):** {_fmt_set(f['det_hallucinations'])}")
-        lines.append(f"- **LLM hallucinations (LLM − GT):** {_fmt_set(f['llm_hallucinations'])}")
-        lines.append(f"- **Det misses (GT − det):** {_fmt_set(f['det_misses'])}")
-        lines.append(f"- **LLM misses (GT − LLM):** {_fmt_set(f['llm_misses'])}")
+        lines.append(f"- **Пересечение (det ∩ LLM):** {_fmt_set(f['overlap'])}")
+        lines.append(f"- **Галлюцинации det (det − GT):** {_fmt_set(f['det_hallucinations'])}")
+        lines.append(f"- **Галлюцинации LLM (LLM − GT):** {_fmt_set(f['llm_hallucinations'])}")
+        lines.append(f"- **Пропуски det (GT − det):** {_fmt_set(f['det_misses'])}")
+        lines.append(f"- **Пропуски LLM (GT − LLM):** {_fmt_set(f['llm_misses'])}")
         lines.append("")
 
     # Overall
     o = result["overall"]
-    lines.append("## Overall Metrics")
+    lines.append("## Общие метрики")
     lines.append("")
-    lines.append("| Metric | Deterministic | LLM |")
+    lines.append("| Метрика | Детерминированный | LLM |")
     lines.append("|---|---|---|")
-    lines.append(f"| Precision | {o['det_precision']:.2f} | {o['llm_precision']:.2f} |")
-    lines.append(f"| Recall | {o['det_recall']:.2f} | {o['llm_recall']:.2f} |")
+    lines.append(f"| Точность | {o['det_precision']:.2f} | {o['llm_precision']:.2f} |")
+    lines.append(f"| Полнота | {o['det_recall']:.2f} | {o['llm_recall']:.2f} |")
     lines.append(f"| F1 | {o['det_f1']:.2f} | {o['llm_f1']:.2f} |")
     lines.append("")
-    lines.append(f"- **Overall overlap (det ∩ LLM):** {_fmt_set(o['overlap'])}")
-    lines.append(f"- **Det extra (hallucinations):** {_fmt_set(o['det_extra'])}")
-    lines.append(f"- **LLM extra (hallucinations):** {_fmt_set(o['llm_extra'])}")
+    lines.append(f"- **Общее пересечение (det ∩ LLM):** {_fmt_set(o['overlap'])}")
+    lines.append(f"- **Избыточные det:** {_fmt_set(o['det_extra'])}")
+    lines.append(f"- **Избыточные LLM:** {_fmt_set(o['llm_extra'])}")
+    lines.append("")
+
+    # Metrics justification
+    lines.append("## Обоснование метрик")
+    lines.append("")
+    lines.append(
+        "- **На уровне фикстур:** Precision = TP / (TP + FP), "
+        "Recall = TP / |GT|, F1 = гармоническое среднее Precision и Recall. "
+        "TP — навыки, найденные методом и присутствующие в ground truth; "
+        "FP — найденные, но отсутствующие в GT (галлюцинации); "
+        "FN — пропущенные из GT (ground truth минус найденные)."
+    )
+    lines.append(
+        "- **Общие (union):** все навыки по всем фикстурам объединяются в одно "
+        "множество. TP = det ∩ GT по всему корпусу (пересечение объединённых "
+        "множеств детерминированного извлечения и ground truth); FN и FP "
+        "вычисляются аналогичным образом над объединением."
+    )
     lines.append("")
 
     # Conclusion
-    lines.append("## Conclusion")
+    lines.append("## Заключение")
     lines.append("")
     if not result["ollama_available"]:
         lines.append(
-            "Ollama was not available at `http://localhost:11434`. "
-            "LLM extraction returned empty sets; deterministic results are shown above."
-            " LLM metrics are zero."
+            "Ollama недоступна в `http://localhost:11434`. "
+            "Извлечение LLM вернула пустые множества; "
+            "результаты детерминированного извлечения показаны выше. "
+            "Метрики LLM равны нулю."
         )
     else:
         det_any = o["det_precision"] > 0 or o["det_recall"] > 0
@@ -570,67 +920,66 @@ def format_report(result: Dict[str, Any]) -> str:
         if llm_any and det_any:
             if o["llm_f1"] > o["det_f1"]:
                 lines.append(
-                    f"LLM extraction outperforms deterministic (F1 = "
+                    f"LLM извлечение превосходит детерминированное (F1 = "
                     f"{o['llm_f1']:.2f} vs {o['det_f1']:.2f})."
                 )
             elif o["det_f1"] > o["llm_f1"]:
                 lines.append(
-                    f"Deterministic extraction outperforms LLM (F1 = "
+                    f"Детерминированное извлечение превосходит LLM (F1 = "
                     f"{o['det_f1']:.2f} vs {o['llm_f1']:.2f})."
                 )
             else:
                 lines.append(
-                    "Deterministic and LLM extraction achieve equal F1 "
+                    "Детерминированное и LLM извлечение достигают равного F1 "
                     f"({o['det_f1']:.2f})."
                 )
         elif det_any and not llm_any:
             lines.append(
-                "LLM extraction found no skills matching ground truth; "
-                "deterministic extraction is the better path here."
+                "LLM не нашла навыков, соответствующей ground truth; "
+                "детерминированное извлечение — лучший путь."
             )
 
         if o["llm_extra"]:
             lines.append(
-                f"LLM introduced hallucinations (skills not in ground truth): "
+                "LLM ввела галлюцинацию (навыки, отсутствующие в ground truth): "
                 f"`{sorted(o['llm_extra'])}`."
             )
         else:
-            lines.append("LLM did not introduce hallucinations beyond ground truth.")
+            lines.append("LLM не ввела галлюцинаций, выходящих за рамки ground truth.")
 
         if o["det_extra"]:
             lines.append(
-                f"Deterministic extraction found extra skills via substring "
-                f"matching: `{sorted(o['det_extra'])}`."
+                "Детерминированное извлечение нашло дополнительные навыки по подстрочному совпадению: "
+                f"`{sorted(o['det_extra'])}`."
             )
         else:
-            lines.append("Deterministic extraction found no extra skills beyond ground truth.")
+            lines.append("Детерминированное извлечение не нашло навыков вне ground truth (в объединении).")
 
         if o["overlap"]:
             lines.append(
-                f"Both methods agreed on {len(o['overlap'])} skills: "
+                f"Оба метода согласились на {len(o['overlap'])} навыках: "
                 f"`{sorted(o['overlap'])}`."
             )
 
-        # Per-fixture LLM extras / misses
-        llm_found_gt = any(
-            set(f["llm_skills"]) & set(f["ground_truth"]) for f in result["fixtures"]
-        )
-        if llm_found_gt:
+        # Per-fixture LLM misses — LLM missed GT skills that deterministic caught
+        total_llm_misses = sum(len(f["llm_misses"]) for f in result["fixtures"])
+        if total_llm_misses > 0:
+            missed_all = sorted(set(
+                skill for f in result["fixtures"] for skill in f["llm_misses"]
+            ))
             lines.append(
-                "LLM found additional relevant skills that deterministic "
-                "extraction missed in some fixtures."
+                f"LLM пропустила {total_llm_misses} упоминаний ground truth "
+                f"({len(missed_all)} уникальных навыков), которые det нашёл: "
+                f"`{missed_all}`."
             )
         else:
-            lines.append(
-                "LLM did not find any additional relevant skills; review "
-                "LLM misses for false negatives."
-            )
+            lines.append("LLM не пропустила ни одного навыка из ground truth.")
 
     lines.append("")
     lines.append("---")
     lines.append(
-        f"*Generated by `scripts/llm_vs_deterministic_compare.py` "
-        f"on {result['timestamp']}*"
+        f"*Сгенерировано `scripts/llm_vs_deterministic_compare.py` "
+        f"в {result['timestamp']}*"
     )
 
     return "\n".join(lines)
